@@ -1,7 +1,13 @@
 [package]
 name = "ascii-table"
-version = "0.1.0"
+version = "1.0.0"
 authors = ["Gerrit Viljoen <red.striker@protonmail.com>"]
+license = "GPL-3.0+"
 edition = "2018"
 
-[dependencies]
+description = "Print ASCII tables to the terminal"
+repository = "https://gitlab.com/d5b4b2/ascii-table"
+homepage = "https://gitlab.com/d5b4b2/ascii-table"
+documentation = "https://docs.rs/ascii-table"
+readme = "readme.md"
+categories = ["ascii", "table"]
