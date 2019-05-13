@@ -15,6 +15,23 @@
 // You should have received a copy of the GNU General Public License
 // along with ascii-table.  If not, see <http://www.gnu.org/licenses/>.
 
+//! Print ASCII tables to the terminal.
+//!
+//! # Example
+//!
+//! ```
+//! use ascii_table::{TableConfig, print_table};
+//!
+//! let config = TableConfig::default();
+//! let data = vec![&[1, 2, 3], &[4, 5, 6], &[7, 8, 9]];
+//! print_table(data, &config);
+//! // ┌───┬───┬───┐
+//! // │ 1 │ 2 │ 3 │
+//! // │ 4 │ 5 │ 6 │
+//! // │ 7 │ 8 │ 9 │
+//! // └───┴───┴───┘
+//! ```
+
 mod config;
 pub use config::*;
 #[cfg(test)] mod test;
