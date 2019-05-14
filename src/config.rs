@@ -15,12 +15,12 @@
 // You should have received a copy of the GNU General Public License
 // along with ascii-table.  If not, see <http://www.gnu.org/licenses/>.
 
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 #[derive(Clone, Debug)]
 pub struct TableConfig {
     pub width: u32,
-    pub columns: HashMap<usize, ColumnConfig>
+    pub columns: BTreeMap<usize, ColumnConfig>
 }
 
 impl Default for TableConfig {
@@ -28,7 +28,7 @@ impl Default for TableConfig {
     fn default() -> Self {
         TableConfig {
             width: 80,
-            columns: HashMap::new()
+            columns: BTreeMap::new()
         }
     }
 }

@@ -120,10 +120,11 @@ fn square_data(mut data: Vec<Vec<String>>, num_cols: usize) -> Vec<Vec<String>> 
 fn correct_config(conf: &TableConfig, num_cols: usize) -> TableConfig {
     let mut conf = conf.clone();
     for col in 0..num_cols {
-      if conf.columns.get(&col).is_none() {
-        conf.columns.insert(col, ColumnConfig::default());
-      }
+        if conf.columns.get(&col).is_none() {
+            conf.columns.insert(col, ColumnConfig::default());
+        }
     }
+    conf.columns.split_off(&num_cols);
     conf
 }
 
@@ -140,12 +141,11 @@ fn column_widths(data: &Vec<Vec<String>>, conf: &TableConfig) -> Vec<u32> {
 
 fn trunc(mut widths: Vec<u32>, conf: &TableConfig) -> Vec<u32> {
     let max_width = conf.width;
-    while widths.iter().sum::<u32>() + ((widths.len() as u32 - 1) * 3) + 4 > max_width {
-        let idx;
-        {
-            let max = widths.iter().max().unwrap();
-            idx = widths.iter().rposition(|x| x == max).unwrap();
-        }
+    let table_padding = ((widths.len() as u32 - 1) * 3) + 4;
+    while widths.iter().sum::<u32>() + table_padding > max_width &&
+          *widths.iter().max().unwrap() > 0 {
+        let max = widths.iter().max().unwrap();
+        let idx = widths.iter().rposition(|x| x == max).unwrap();
         widths[idx] = widths[idx] - 1;
     }
     widths

@@ -244,6 +244,21 @@ fn partial_head2() {
 }
 
 #[test]
+fn ignore_unused_head() {
+    let config = cube_config();
+    let input = vec![&[1], &[2], &[3]];
+    let expected = "┌───┐\n\
+                    │ a │\n\
+                    ├───┤\n\
+                    │ 1 │\n\
+                    │ 2 │\n\
+                    │ 3 │\n\
+                    └───┘\n";
+
+    assert_eq!(expected, format_table(input, &config));
+}
+
+#[test]
 fn align_right() {
     let mut config = TableConfig::default();
     config.columns.insert(0, ColumnConfig {header: String::from("a"), align: Align::Right});
