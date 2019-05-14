@@ -33,7 +33,7 @@ fn default_config() -> TableConfig {
 }
 
 #[test]
-fn empty1() {
+fn empty_rows() {
     let config = default_config();
     let input: Vec<Vec<i32>> = vec![];
     let expected = "┌──┐\n\
@@ -44,7 +44,7 @@ fn empty1() {
 }
 
 #[test]
-fn empty2() {
+fn empty_columns() {
     let config = default_config();
     let input: Vec<Vec<i32>> = vec![vec![]];
     let expected = "┌──┐\n\
@@ -55,7 +55,7 @@ fn empty2() {
 }
 
 #[test]
-fn cube() {
+fn cube_with_header() {
     let config = cube_config();
     let input = vec![&[1, 2, 3], &[4, 5, 6], &[7, 8, 9]];
     let expected = "┌───┬───┬───┐\n\
@@ -70,7 +70,7 @@ fn cube() {
 }
 
 #[test]
-fn cube_no_header() {
+fn cube_with_no_header() {
     let config = default_config();
     let input = vec![&[1, 2, 3], &[4, 5, 6], &[7, 8, 9]];
     let expected = "┌───┬───┬───┐\n\
@@ -94,7 +94,7 @@ fn one_cell() {
 }
 
 #[test]
-fn mini_empty() {
+fn smallest_cell() {
     let config = TableConfig {
         width: 4,
         ..default_config()
@@ -108,7 +108,7 @@ fn mini_empty() {
 }
 
 #[test]
-fn cube_empty() {
+fn smallest_cube() {
     let config = TableConfig {
         width: 4,
         ..default_config()
@@ -124,7 +124,7 @@ fn cube_empty() {
 }
 
 #[test]
-fn mini_zero_char() {
+fn show_no_content_for_cell() {
     let config = TableConfig {
         width: 5,
         ..default_config()
@@ -138,7 +138,7 @@ fn mini_zero_char() {
 }
 
 #[test]
-fn mini_one_char() {
+fn show_one_character_for_cell() {
     let config = TableConfig {
         width: 6,
         ..default_config()
@@ -152,7 +152,79 @@ fn mini_one_char() {
 }
 
 #[test]
-fn partial_cube1() {
+fn smallest_cell_with_header() {
+    let mut config = TableConfig {
+        width: 4,
+        ..default_config()
+    };
+    config.columns.insert(0, ColumnConfig {header: "foo".to_string(), ..ColumnConfig::default()});
+    let input = vec![&[123]];
+    let expected = "┌──┐\n\
+                    │  │\n\
+                    ├──┤\n\
+                    │  │\n\
+                    └──┘\n";
+
+    assert_eq!(expected, format_table(input, &config));
+}
+
+#[test]
+fn smallest_cube_with_header() {
+    let mut config = TableConfig {
+        width: 4,
+        ..default_config()
+    };
+    config.columns.insert(0, ColumnConfig {header: "abc".to_string(), ..ColumnConfig::default()});
+    config.columns.insert(1, ColumnConfig {header: "def".to_string(), ..ColumnConfig::default()});
+    config.columns.insert(2, ColumnConfig {header: "ghi".to_string(), ..ColumnConfig::default()});
+    let input = vec![&[1, 2, 3], &[4, 5, 6], &[7, 8, 9]];
+    let expected = "┌──┬──┬──┐\n\
+                    │  │  │  │\n\
+                    ├──┼──┼──┤\n\
+                    │  │  │  │\n\
+                    │  │  │  │\n\
+                    │  │  │  │\n\
+                    └──┴──┴──┘\n";
+
+    assert_eq!(expected, format_table(input, &config));
+}
+
+#[test]
+fn show_no_content_for_header() {
+    let mut config = TableConfig {
+        width: 5,
+        ..default_config()
+    };
+    config.columns.insert(0, ColumnConfig {header: "abc".to_string(), ..ColumnConfig::default()});
+    let input = vec![&[""]];
+    let expected = "┌───┐\n\
+                    │ + │\n\
+                    ├───┤\n\
+                    │   │\n\
+                    └───┘\n";
+
+    assert_eq!(expected, format_table(input, &config));
+}
+
+#[test]
+fn show_one_character_for_header() {
+    let mut config = TableConfig {
+        width: 6,
+        ..default_config()
+    };
+    config.columns.insert(0, ColumnConfig {header: "abc".to_string(), ..ColumnConfig::default()});
+    let input = vec![&[""]];
+    let expected = "┌────┐\n\
+                    │ a+ │\n\
+                    ├────┤\n\
+                    │    │\n\
+                    └────┘\n";
+
+    assert_eq!(expected, format_table(input, &config));
+}
+
+#[test]
+fn cube_with_partial_content() {
     let config = cube_config();
     let input: Vec<&[i32]> = vec![&[1, 2, 3], &[4, 5], &[7]];
     let expected = "┌───┬───┬───┐\n\
@@ -167,7 +239,7 @@ fn partial_cube1() {
 }
 
 #[test]
-fn partial_cube2() {
+fn cube_with_partial_content_reversed() {
     let config = cube_config();
     let input: Vec<&[i32]> = vec![&[1], &[4, 5], &[7, 8, 9]];
     let expected = "┌───┬───┬───┐\n\
@@ -182,7 +254,7 @@ fn partial_cube2() {
 }
 
 #[test]
-fn resize_col1() {
+fn resize_column() {
     let config = cube_config();
     let input = vec![&[1], &[23], &[456]];
     let expected = "┌─────┐\n\
@@ -197,7 +269,7 @@ fn resize_col1() {
 }
 
 #[test]
-fn resize_col2() {
+fn resize_column_reversed() {
     let config = cube_config();
     let input = vec![&[123], &[45], &[6]];
     let expected = "┌─────┐\n\
@@ -212,7 +284,23 @@ fn resize_col2() {
 }
 
 #[test]
-fn partial_head1() {
+fn resize_column_via_header() {
+    let mut config = TableConfig::default();
+    config.columns.insert(0, ColumnConfig {header: "foo".to_string(), ..ColumnConfig::default()});
+    let input = vec![&[1], &[2], &[3]];
+    let expected = "┌─────┐\n\
+                    │ foo │\n\
+                    ├─────┤\n\
+                    │ 1   │\n\
+                    │ 2   │\n\
+                    │ 3   │\n\
+                    └─────┘\n";
+
+    assert_eq!(expected, format_table(input, &config));
+}
+
+#[test]
+fn partial_header_at_start() {
     let config = cube_config();
     let input = vec![&[1, 2, 3, 0], &[4, 5, 6, 0], &[7, 8, 9, 0]];
     let expected = "┌───┬───┬───┬───┐\n\
@@ -227,7 +315,7 @@ fn partial_head1() {
 }
 
 #[test]
-fn partial_head2() {
+fn partial_header_at_end() {
     let mut config = TableConfig::default();
     config.columns.insert(2, ColumnConfig {header: String::from("c"), ..ColumnConfig::default()});
 
@@ -244,7 +332,7 @@ fn partial_head2() {
 }
 
 #[test]
-fn ignore_unused_head() {
+fn ignore_unused_header() {
     let config = cube_config();
     let input = vec![&[1], &[2], &[3]];
     let expected = "┌───┐\n\
