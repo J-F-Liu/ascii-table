@@ -134,17 +134,17 @@ fn column_widths(data: &Vec<Vec<String>>, conf: &TableConfig) -> Vec<u32> {
         let header_width = conf.columns[&a].header.chars().count();
         column_width.max(header_width) as u32
     }).collect();
-    trunc(result, conf)
+    truncate_widths(result, conf)
 }
 
-fn trunc(mut widths: Vec<u32>, conf: &TableConfig) -> Vec<u32> {
+fn truncate_widths(mut widths: Vec<u32>, conf: &TableConfig) -> Vec<u32> {
     let max_width = conf.width;
     let table_padding = ((widths.len() as u32 - 1) * 3) + 4;
     while widths.iter().sum::<u32>() + table_padding > max_width &&
           *widths.iter().max().unwrap() > 0 {
         let max = widths.iter().max().unwrap();
         let idx = widths.iter().rposition(|x| x == max).unwrap();
-        widths[idx] = widths[idx] - 1;
+        widths[idx] -= 1;
     }
     widths
 }
