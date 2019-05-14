@@ -71,19 +71,19 @@ fn format_table_inner(data: Vec<Vec<String>>, conf: &TableConfig) -> String {
 
     let num_cols = data.iter().map(|x| x.len()).max().unwrap();
     let data = square_data(data, num_cols);
-    let col_conf = resolve_column_config(conf, num_cols);
-    let header = col_conf.iter().any(|x| x.header.chars().count() > 0);
-    let widths = column_widths(&data, conf, &col_conf);
+    let conf = correct_config(conf, num_cols);
+    let header = conf.columns.iter().any(|(_, x)| x.header.chars().count() > 0);
+    let widths = column_widths(&data, &conf);
 
     let mut result = String::new();
     result.push_str(&format_first(&widths));
     if header {
-        let x: Vec<String> = col_conf.iter().map(|x| x.header.clone()).collect();
+        let x: Vec<String> = conf.columns.iter().map(|(_, x)| x.header.clone()).collect();
         result.push_str(&format_row2(&x, &widths));
         result.push_str(&format_middle(&widths));
     }
     for row in data {
-        result.push_str(&format_row(&row, &col_conf, &widths));
+        result.push_str(&format_row(&row, &conf, &widths));
     }
     result.push_str(&format_last(&widths));
     result
@@ -117,16 +117,19 @@ fn square_data(mut data: Vec<Vec<String>>, num_cols: usize) -> Vec<Vec<String>> 
     data
 }
 
-fn resolve_column_config(conf: &TableConfig, num_cols: usize) -> Vec<ColumnConfig> {
-    (0..num_cols).map(|x| match conf.columns.get(&x) {
-        Some(x) => x.clone(),
-        None => ColumnConfig::default()
-    }).collect()
+fn correct_config(conf: &TableConfig, num_cols: usize) -> TableConfig {
+    let mut conf = conf.clone();
+    for col in 0..num_cols {
+      if conf.columns.get(&col).is_none() {
+        conf.columns.insert(col, ColumnConfig::default());
+      }
+    }
+    conf
 }
 
-fn column_widths(data: &Vec<Vec<String>>, conf: &TableConfig, col_conf: &Vec<ColumnConfig>) -> Vec<u32> {
-    let header_widths = col_conf.iter().map(|x| x.header.chars().count());
-    let data_widths = (0..col_conf.len()).map(|a|
+fn column_widths(data: &Vec<Vec<String>>, conf: &TableConfig) -> Vec<u32> {
+    let header_widths = conf.columns.iter().map(|(_, x)| x.header.chars().count());
+    let data_widths = (0..conf.columns.len()).map(|a|
         data.iter().map(|row|
             if a < row.len() {row[a].chars().count()} else {0}
         ).max().unwrap_or(0)
@@ -178,8 +181,8 @@ fn format_middle(widths: &Vec<u32>) -> String {
     format_line(&row, &format!("{}{}", NES, EW), &format!("{}{}{}", EW, NEWS, EW), &format!("{}{}", EW, NWS))
 }
 
-fn format_row(row: &Vec<String>, col_conf: &Vec<ColumnConfig>, widths: &Vec<u32>) -> String {
-    let row: Vec<String> = row.iter().zip(widths.iter()).zip(col_conf.iter()).map(|((cell, width), conf)|
+fn format_row(row: &Vec<String>, conf: &TableConfig, widths: &Vec<u32>) -> String {
+    let row: Vec<String> = row.iter().zip(widths.iter()).zip(conf.columns.iter()).map(|((cell, width), (_, conf))|
         make_cell(&cell, *width as usize, ' ', &conf.align)
     ).collect();
     format_line(&row, &format!("{}{}", NS, ' '), &format!("{}{}{}", ' ', NS, ' '), &format!("{}{}", ' ', NS))
