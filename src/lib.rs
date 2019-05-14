@@ -201,7 +201,9 @@ fn format_last(widths: &[usize]) -> String {
 fn make_cell(text: &str, len: usize, pad: char, align: Align) -> String {
     if text.chars().count() > len {
         let mut result: String = text.chars().take(len).collect();
-        if let Some(_) = result.pop() {result.push('+')};
+        if result.pop().is_some() {
+          result.push('+')
+        }
         result
     } else {
         let mut result = text.to_string();
