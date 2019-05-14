@@ -108,6 +108,22 @@ fn mini_empty() {
 }
 
 #[test]
+fn cube_empty() {
+    let config = TableConfig {
+        width: 4,
+        ..default_config()
+    };
+    let input = vec![&[1, 2, 3], &[4, 5, 6], &[7, 8, 9]];
+    let expected = "┌──┬──┬──┐\n\
+                    │  │  │  │\n\
+                    │  │  │  │\n\
+                    │  │  │  │\n\
+                    └──┴──┴──┘\n";
+
+    assert_eq!(expected, format_table(input, &config));
+}
+
+#[test]
 fn mini_zero_char() {
     let config = TableConfig {
         width: 5,
