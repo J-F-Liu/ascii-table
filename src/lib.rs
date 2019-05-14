@@ -89,7 +89,7 @@ fn format_table_inner(data: Vec<Vec<String>>, conf: &TableConfig) -> String {
     result
 }
 
-fn valid(data: &Vec<Vec<String>>, conf: &TableConfig) -> bool {
+fn valid(data: &[Vec<String>], conf: &TableConfig) -> bool {
     if data.len() == 0 {
         false
     } else if conf.width < 4 {
@@ -149,7 +149,7 @@ fn truncate_widths(mut widths: Vec<u32>, conf: &TableConfig) -> Vec<u32> {
     widths
 }
 
-fn format_line(row: &Vec<String>, head: &str, delim: &str, tail: &str) -> String {
+fn format_line(row: &[String], head: &str, delim: &str, tail: &str) -> String {
     let mut result = String::new();
     result.push_str(head);
     for cell in row {
