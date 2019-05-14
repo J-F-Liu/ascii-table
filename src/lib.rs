@@ -129,13 +129,11 @@ fn correct_config(conf: &TableConfig, num_cols: usize) -> TableConfig {
 }
 
 fn column_widths(data: &Vec<Vec<String>>, conf: &TableConfig) -> Vec<u32> {
-    let header_widths = conf.columns.iter().map(|(_, x)| x.header.chars().count());
-    let data_widths = (0..conf.columns.len()).map(|a|
-        data.iter().map(|row|
-            if a < row.len() {row[a].chars().count()} else {0}
-        ).max().unwrap_or(0)
-    );
-    let result = header_widths.zip(data_widths).map(|(x, y)| x.max(y) as u32).collect();
+    let result: Vec<_> = (0..conf.columns.len()).map(|a| {
+        let column_width = data.iter().map(|row| row[a].chars().count()).max().unwrap();
+        let header_width = conf.columns[&a].header.chars().count();
+        column_width.max(header_width) as u32
+    }).collect();
     trunc(result, conf)
 }
 
