@@ -128,19 +128,19 @@ fn correct_config(conf: &TableConfig, num_cols: usize) -> TableConfig {
     conf
 }
 
-fn column_widths(data: &[Vec<String>], conf: &TableConfig) -> Vec<u32> {
+fn column_widths(data: &[Vec<String>], conf: &TableConfig) -> Vec<usize> {
     let result: Vec<_> = (0..conf.columns.len()).map(|a| {
         let column_width = data.iter().map(|row| row[a].chars().count()).max().unwrap();
         let header_width = conf.columns[&a].header.chars().count();
-        column_width.max(header_width) as u32
+        column_width.max(header_width)
     }).collect();
     truncate_widths(result, conf)
 }
 
-fn truncate_widths(mut widths: Vec<u32>, conf: &TableConfig) -> Vec<u32> {
+fn truncate_widths(mut widths: Vec<usize>, conf: &TableConfig) -> Vec<usize> {
     let max_width = conf.width;
-    let table_padding = ((widths.len() as u32 - 1) * 3) + 4;
-    while widths.iter().sum::<u32>() + table_padding > max_width &&
+    let table_padding = ((widths.len() - 1) * 3) + 4;
+    while widths.iter().sum::<usize>() + table_padding > max_width &&
           *widths.iter().max().unwrap() > 0 {
         let max = widths.iter().max().unwrap();
         let idx = widths.iter().rposition(|x| x == max).unwrap();
@@ -169,32 +169,32 @@ fn format_empty() -> String {
     + &format_last(&vec![0])
 }
 
-fn format_first(widths: &[u32]) -> String {
-    let row: Vec<String> = widths.iter().map(|x| EW.repeat(*x as usize)).collect();
+fn format_first(widths: &[usize]) -> String {
+    let row: Vec<String> = widths.iter().map(|&x| EW.repeat(x)).collect();
     format_line(&row, &format!("{}{}", SE, EW), &format!("{}{}{}", EW, EWS, EW), &format!("{}{}", EW, SW))
 }
 
-fn format_middle(widths: &[u32]) -> String {
-    let row: Vec<String> = widths.iter().map(|x| EW.repeat(*x as usize)).collect();
+fn format_middle(widths: &[usize]) -> String {
+    let row: Vec<String> = widths.iter().map(|&x| EW.repeat(x)).collect();
     format_line(&row, &format!("{}{}", NES, EW), &format!("{}{}{}", EW, NEWS, EW), &format!("{}{}", EW, NWS))
 }
 
-fn format_row(row: &[String], conf: &TableConfig, widths: &[u32]) -> String {
-    let row: Vec<String> = row.iter().zip(widths.iter()).zip(conf.columns.iter()).map(|((cell, width), (_, conf))|
-        make_cell(&cell, *width as usize, ' ', conf.align)
+fn format_row(row: &[String], conf: &TableConfig, widths: &[usize]) -> String {
+    let row: Vec<String> = row.iter().zip(widths.iter()).zip(conf.columns.iter()).map(|((cell, &width), (_, conf))|
+        make_cell(&cell, width, ' ', conf.align)
     ).collect();
     format_line(&row, &format!("{}{}", NS, ' '), &format!("{}{}{}", ' ', NS, ' '), &format!("{}{}", ' ', NS))
 }
 
-fn format_row2(row: &[String], widths: &[u32]) -> String {
-    let row: Vec<String> = row.iter().zip(widths.iter()).map(|(cell, width)|
-        make_cell(&cell, *width as usize, ' ', Align::Left)
+fn format_row2(row: &[String], widths: &[usize]) -> String {
+    let row: Vec<String> = row.iter().zip(widths.iter()).map(|(cell, &width)|
+        make_cell(&cell, width, ' ', Align::Left)
     ).collect();
     format_line(&row, &format!("{}{}", NS, ' '), &format!("{}{}{}", ' ', NS, ' '), &format!("{}{}", ' ', NS))
 }
 
-fn format_last(widths: &[u32]) -> String {
-    let row: Vec<String> = widths.iter().map(|x| EW.repeat(*x as usize)).collect();
+fn format_last(widths: &[usize]) -> String {
+    let row: Vec<String> = widths.iter().map(|&x| EW.repeat(x)).collect();
     format_line(&row, &format!("{}{}", NE, EW), &format!("{}{}{}", EW, NEW, EW), &format!("{}{}", EW, NW))
 }
 

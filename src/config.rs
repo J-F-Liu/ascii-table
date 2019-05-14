@@ -19,7 +19,7 @@ use std::collections::BTreeMap;
 
 #[derive(Clone, Debug)]
 pub struct TableConfig {
-    pub width: u32,
+    pub width: usize,
     pub columns: BTreeMap<usize, ColumnConfig>
 }
 
