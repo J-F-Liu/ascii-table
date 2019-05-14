@@ -78,7 +78,7 @@ fn format_table_inner(data: Vec<Vec<String>>, conf: &TableConfig) -> String {
     let mut result = String::new();
     result.push_str(&format_first(&widths));
     if header {
-        let x: Vec<String> = conf.columns.iter().map(|(_, x)| x.header.clone()).collect();
+        let x: Vec<_> = conf.columns.iter().map(|(_, x)| x.header.clone()).collect();
         result.push_str(&format_row2(&x, &widths));
         result.push_str(&format_middle(&widths));
     }
@@ -128,7 +128,7 @@ fn correct_config(conf: &TableConfig, num_cols: usize) -> TableConfig {
     conf
 }
 
-fn column_widths(data: &Vec<Vec<String>>, conf: &TableConfig) -> Vec<u32> {
+fn column_widths(data: &[Vec<String>], conf: &TableConfig) -> Vec<u32> {
     let result: Vec<_> = (0..conf.columns.len()).map(|a| {
         let column_width = data.iter().map(|row| row[a].chars().count()).max().unwrap();
         let header_width = conf.columns[&a].header.chars().count();
