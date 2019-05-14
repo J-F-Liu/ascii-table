@@ -169,36 +169,36 @@ fn format_empty() -> String {
     + &format_last(&vec![0])
 }
 
-fn format_first(widths: &Vec<u32>) -> String {
+fn format_first(widths: &[u32]) -> String {
     let row: Vec<String> = widths.iter().map(|x| EW.repeat(*x as usize)).collect();
     format_line(&row, &format!("{}{}", SE, EW), &format!("{}{}{}", EW, EWS, EW), &format!("{}{}", EW, SW))
 }
 
-fn format_middle(widths: &Vec<u32>) -> String {
+fn format_middle(widths: &[u32]) -> String {
     let row: Vec<String> = widths.iter().map(|x| EW.repeat(*x as usize)).collect();
     format_line(&row, &format!("{}{}", NES, EW), &format!("{}{}{}", EW, NEWS, EW), &format!("{}{}", EW, NWS))
 }
 
-fn format_row(row: &Vec<String>, conf: &TableConfig, widths: &Vec<u32>) -> String {
+fn format_row(row: &[String], conf: &TableConfig, widths: &[u32]) -> String {
     let row: Vec<String> = row.iter().zip(widths.iter()).zip(conf.columns.iter()).map(|((cell, width), (_, conf))|
-        make_cell(&cell, *width as usize, ' ', &conf.align)
+        make_cell(&cell, *width as usize, ' ', conf.align)
     ).collect();
     format_line(&row, &format!("{}{}", NS, ' '), &format!("{}{}{}", ' ', NS, ' '), &format!("{}{}", ' ', NS))
 }
 
-fn format_row2(row: &Vec<String>, widths: &Vec<u32>) -> String {
+fn format_row2(row: &[String], widths: &[u32]) -> String {
     let row: Vec<String> = row.iter().zip(widths.iter()).map(|(cell, width)|
-        make_cell(&cell, *width as usize, ' ', &Align::Left)
+        make_cell(&cell, *width as usize, ' ', Align::Left)
     ).collect();
     format_line(&row, &format!("{}{}", NS, ' '), &format!("{}{}{}", ' ', NS, ' '), &format!("{}{}", ' ', NS))
 }
 
-fn format_last(widths: &Vec<u32>) -> String {
+fn format_last(widths: &[u32]) -> String {
     let row: Vec<String> = widths.iter().map(|x| EW.repeat(*x as usize)).collect();
     format_line(&row, &format!("{}{}", NE, EW), &format!("{}{}{}", EW, NEW, EW), &format!("{}{}", EW, NW))
 }
 
-fn make_cell(text: &str, len: usize, pad: char, align: &Align) -> String {
+fn make_cell(text: &str, len: usize, pad: char, align: Align) -> String {
     if text.chars().count() > len {
         let mut result: String = text.chars().take(len).collect();
         if let Some(_) = result.pop() {result.push('+')};
