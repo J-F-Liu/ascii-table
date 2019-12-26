@@ -33,8 +33,9 @@
 //! ```
 
 mod config;
-pub use config::*;
 #[cfg(test)] mod test;
+
+pub use config::*;
 
 use std::fmt::Display;
 

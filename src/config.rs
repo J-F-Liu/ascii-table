@@ -17,10 +17,17 @@
 
 use std::collections::BTreeMap;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct TableConfig {
     pub width: usize,
     pub columns: BTreeMap<usize, ColumnConfig>
+}
+
+impl TableConfig {
+
+    pub fn new(width: usize, columns: BTreeMap<usize, ColumnConfig>) -> Self {
+        Self { width, columns }
+    }
 }
 
 impl Default for TableConfig {
@@ -33,10 +40,17 @@ impl Default for TableConfig {
     }
 }
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct ColumnConfig {
     pub header: String,
     pub align: Align
+}
+
+impl ColumnConfig {
+
+    pub fn new(header: String, align: Align) -> Self {
+        Self { header, align }
+    }
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, Ord, PartialOrd)]
