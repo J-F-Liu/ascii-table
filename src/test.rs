@@ -15,16 +15,14 @@
 // You should have received a copy of the GNU General Public License
 // along with ascii-table.  If not, see <http://www.gnu.org/licenses/>.
 
-use super::*;
+use crate::{TableConfig, ColumnConfig, format_table};
+use crate::Align::{Left, Right, Center};
 
 fn cube_config() -> TableConfig {
     let mut result = TableConfig::default();
-    result.columns.insert(0, ColumnConfig::default());
-    result.columns.insert(1, ColumnConfig::default());
-    result.columns.insert(2, ColumnConfig::default());
-    if let Some(x) = result.columns.get_mut(&0) {x.header = String::from("a")}
-    if let Some(x) = result.columns.get_mut(&1) {x.header = String::from("b")}
-    if let Some(x) = result.columns.get_mut(&2) {x.header = String::from("c")}
+    result.columns.insert(0, ColumnConfig::new("a", Left));
+    result.columns.insert(1, ColumnConfig::new("b", Left));
+    result.columns.insert(2, ColumnConfig::new("c", Left));
     result
 }
 
@@ -349,7 +347,7 @@ fn ignore_unused_header() {
 #[test]
 fn align_right() {
     let mut config = TableConfig::default();
-    config.columns.insert(0, ColumnConfig {header: String::from("a"), align: Align::Right});
+    config.columns.insert(0, ColumnConfig {header: String::from("a"), align: Right});
 
     let input = vec![&[1], &[23], &[456]];
     let expected = "┌─────┐\n\
@@ -366,7 +364,7 @@ fn align_right() {
 #[test]
 fn align_center() {
     let mut config = TableConfig::default();
-    config.columns.insert(0, ColumnConfig {header: String::from("a"), align: Align::Center});
+    config.columns.insert(0, ColumnConfig {header: String::from("a"), align: Center});
 
     let input = vec![&[1], &[23], &[456], &[7890], &[12345]];
     let expected = "┌───────┐\n\
