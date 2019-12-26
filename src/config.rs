@@ -33,7 +33,7 @@ impl TableConfig {
 impl Default for TableConfig {
 
     fn default() -> Self {
-        TableConfig {
+        Self {
             width: 80,
             columns: BTreeMap::new()
         }
