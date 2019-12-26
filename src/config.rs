@@ -48,8 +48,9 @@ pub struct ColumnConfig {
 
 impl ColumnConfig {
 
-    pub fn new(header: String, align: Align) -> Self {
-        Self { header, align }
+    pub fn new<T>(header: T, align: Align) -> Self
+    where T: AsRef<str> {
+        Self { header: header.as_ref().to_string(), align }
     }
 }
 
