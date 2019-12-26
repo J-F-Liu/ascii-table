@@ -18,6 +18,8 @@
 use crate::{TableConfig, ColumnConfig, format_table};
 use crate::Align::{Left, Right, Center};
 
+use std::fmt::Display;
+
 fn cube_config() -> TableConfig {
     let mut result = TableConfig::default();
     result.columns.insert(0, ColumnConfig::new("a", Left));
@@ -376,6 +378,21 @@ fn align_center() {
                     │ 7890  │\n\
                     │ 12345 │\n\
                     └───────┘\n";
+
+    assert_eq!(expected, format_table(input, &config));
+}
+
+#[test]
+fn mixed_types() {
+    let config = cube_config();
+    let input: Vec<Vec<&dyn Display>> = vec![vec![&1, &'2', &"3"], vec![&"4", &5, &'6'], vec![&'7', &"8", &9]];
+    let expected = "┌───┬───┬───┐\n\
+                    │ a │ b │ c │\n\
+                    ├───┼───┼───┤\n\
+                    │ 1 │ 2 │ 3 │\n\
+                    │ 4 │ 5 │ 6 │\n\
+                    │ 7 │ 8 │ 9 │\n\
+                    └───┴───┴───┘\n";
 
     assert_eq!(expected, format_table(input, &config));
 }
