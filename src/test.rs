@@ -15,21 +15,21 @@
 // You should have received a copy of the GNU General Public License
 // along with ascii-table.  If not, see <http://www.gnu.org/licenses/>.
 
-use crate::{TableConfig, ColumnConfig, format_table};
+use crate::{AsciiTable, Column};
 use crate::Align::*;
 
 use std::fmt::Display;
 
-fn cube_config() -> TableConfig {
-    let mut result = TableConfig::default();
-    result.columns.insert(0, ColumnConfig::new("a", Left));
-    result.columns.insert(1, ColumnConfig::new("b", Left));
-    result.columns.insert(2, ColumnConfig::new("c", Left));
+fn cube_config() -> AsciiTable {
+    let mut result = AsciiTable::default();
+    result.columns.insert(0, Column::new("a", Left));
+    result.columns.insert(1, Column::new("b", Left));
+    result.columns.insert(2, Column::new("c", Left));
     result
 }
 
-fn default_config() -> TableConfig {
-    TableConfig::default()
+fn default_config() -> AsciiTable {
+    AsciiTable::default()
 }
 
 #[test]
@@ -40,7 +40,7 @@ fn empty_rows() {
                     │  │\n\
                     └──┘\n";
 
-    assert_eq!(expected, format_table(input, &config));
+    assert_eq!(expected, config.format(input));
 }
 
 #[test]
@@ -51,7 +51,7 @@ fn empty_columns() {
                     │  │\n\
                     └──┘\n";
 
-    assert_eq!(expected, format_table(input, &config));
+    assert_eq!(expected, config.format(input));
 }
 
 #[test]
@@ -66,7 +66,7 @@ fn cube_with_header() {
                     │ 7 │ 8 │ 9 │\n\
                     └───┴───┴───┘\n";
 
-    assert_eq!(expected, format_table(input, &config));
+    assert_eq!(expected, config.format(input));
 }
 
 #[test]
@@ -79,7 +79,7 @@ fn cube_with_no_header() {
                     │ 7 │ 8 │ 9 │\n\
                     └───┴───┴───┘\n";
 
-    assert_eq!(expected, format_table(input, &config));
+    assert_eq!(expected, config.format(input));
 }
 
 #[test]
@@ -90,12 +90,12 @@ fn one_cell() {
                     │ 1 │\n\
                     └───┘\n";
 
-    assert_eq!(expected, format_table(input, &config));
+    assert_eq!(expected, config.format(input));
 }
 
 #[test]
 fn smallest_cell() {
-    let config = TableConfig {
+    let config = AsciiTable {
         width: 4,
         ..default_config()
     };
@@ -104,12 +104,12 @@ fn smallest_cell() {
                     │  │\n\
                     └──┘\n";
 
-    assert_eq!(expected, format_table(input, &config));
+    assert_eq!(expected, config.format(input));
 }
 
 #[test]
 fn smallest_cube() {
-    let config = TableConfig {
+    let config = AsciiTable {
         width: 4,
         ..default_config()
     };
@@ -120,12 +120,12 @@ fn smallest_cube() {
                     │  │  │  │\n\
                     └──┴──┴──┘\n";
 
-    assert_eq!(expected, format_table(input, &config));
+    assert_eq!(expected, config.format(input));
 }
 
 #[test]
 fn show_no_content_for_cell() {
-    let config = TableConfig {
+    let config = AsciiTable {
         width: 5,
         ..default_config()
     };
@@ -134,12 +134,12 @@ fn show_no_content_for_cell() {
                     │ + │\n\
                     └───┘\n";
 
-    assert_eq!(expected, format_table(input, &config));
+    assert_eq!(expected, config.format(input));
 }
 
 #[test]
 fn show_one_character_for_cell() {
-    let config = TableConfig {
+    let config = AsciiTable {
         width: 6,
         ..default_config()
     };
@@ -148,16 +148,16 @@ fn show_one_character_for_cell() {
                     │ 1+ │\n\
                     └────┘\n";
 
-    assert_eq!(expected, format_table(input, &config));
+    assert_eq!(expected, config.format(input));
 }
 
 #[test]
 fn smallest_cell_with_header() {
-    let mut config = TableConfig {
+    let mut config = AsciiTable {
         width: 4,
         ..default_config()
     };
-    config.columns.insert(0, ColumnConfig {header: "foo".to_string(), ..ColumnConfig::default()});
+    config.columns.insert(0, Column {header: "foo".to_string(), ..Column::default()});
     let input = vec![&[123]];
     let expected = "┌──┐\n\
                     │  │\n\
@@ -165,18 +165,18 @@ fn smallest_cell_with_header() {
                     │  │\n\
                     └──┘\n";
 
-    assert_eq!(expected, format_table(input, &config));
+    assert_eq!(expected, config.format(input));
 }
 
 #[test]
 fn smallest_cube_with_header() {
-    let mut config = TableConfig {
+    let mut config = AsciiTable {
         width: 4,
         ..default_config()
     };
-    config.columns.insert(0, ColumnConfig {header: "abc".to_string(), ..ColumnConfig::default()});
-    config.columns.insert(1, ColumnConfig {header: "def".to_string(), ..ColumnConfig::default()});
-    config.columns.insert(2, ColumnConfig {header: "ghi".to_string(), ..ColumnConfig::default()});
+    config.columns.insert(0, Column {header: "abc".to_string(), ..Column::default()});
+    config.columns.insert(1, Column {header: "def".to_string(), ..Column::default()});
+    config.columns.insert(2, Column {header: "ghi".to_string(), ..Column::default()});
     let input = vec![&[1, 2, 3], &[4, 5, 6], &[7, 8, 9]];
     let expected = "┌──┬──┬──┐\n\
                     │  │  │  │\n\
@@ -186,16 +186,16 @@ fn smallest_cube_with_header() {
                     │  │  │  │\n\
                     └──┴──┴──┘\n";
 
-    assert_eq!(expected, format_table(input, &config));
+    assert_eq!(expected, config.format(input));
 }
 
 #[test]
 fn show_no_content_for_header() {
-    let mut config = TableConfig {
+    let mut config = AsciiTable {
         width: 5,
         ..default_config()
     };
-    config.columns.insert(0, ColumnConfig {header: "abc".to_string(), ..ColumnConfig::default()});
+    config.columns.insert(0, Column {header: "abc".to_string(), ..Column::default()});
     let input = vec![&[""]];
     let expected = "┌───┐\n\
                     │ + │\n\
@@ -203,16 +203,16 @@ fn show_no_content_for_header() {
                     │   │\n\
                     └───┘\n";
 
-    assert_eq!(expected, format_table(input, &config));
+    assert_eq!(expected, config.format(input));
 }
 
 #[test]
 fn show_one_character_for_header() {
-    let mut config = TableConfig {
+    let mut config = AsciiTable {
         width: 6,
         ..default_config()
     };
-    config.columns.insert(0, ColumnConfig {header: "abc".to_string(), ..ColumnConfig::default()});
+    config.columns.insert(0, Column {header: "abc".to_string(), ..Column::default()});
     let input = vec![&[""]];
     let expected = "┌────┐\n\
                     │ a+ │\n\
@@ -220,7 +220,7 @@ fn show_one_character_for_header() {
                     │    │\n\
                     └────┘\n";
 
-    assert_eq!(expected, format_table(input, &config));
+    assert_eq!(expected, config.format(input));
 }
 
 #[test]
@@ -235,7 +235,7 @@ fn cube_with_partial_content() {
                     │ 7 │   │   │\n\
                     └───┴───┴───┘\n";
 
-    assert_eq!(expected, format_table(input, &config));
+    assert_eq!(expected, config.format(input));
 }
 
 #[test]
@@ -250,7 +250,7 @@ fn cube_with_partial_content_reversed() {
                     │ 7 │ 8 │ 9 │\n\
                     └───┴───┴───┘\n";
 
-    assert_eq!(expected, format_table(input, &config));
+    assert_eq!(expected, config.format(input));
 }
 
 #[test]
@@ -265,7 +265,7 @@ fn resize_column() {
                     │ 456 │\n\
                     └─────┘\n";
 
-    assert_eq!(expected, format_table(input, &config));
+    assert_eq!(expected, config.format(input));
 }
 
 #[test]
@@ -280,13 +280,13 @@ fn resize_column_reversed() {
                     │ 6   │\n\
                     └─────┘\n";
 
-    assert_eq!(expected, format_table(input, &config));
+    assert_eq!(expected, config.format(input));
 }
 
 #[test]
 fn resize_column_via_header() {
-    let mut config = TableConfig::default();
-    config.columns.insert(0, ColumnConfig {header: "foo".to_string(), ..ColumnConfig::default()});
+    let mut config = AsciiTable::default();
+    config.columns.insert(0, Column {header: "foo".to_string(), ..Column::default()});
     let input = vec![&[1], &[2], &[3]];
     let expected = "┌─────┐\n\
                     │ foo │\n\
@@ -296,7 +296,7 @@ fn resize_column_via_header() {
                     │ 3   │\n\
                     └─────┘\n";
 
-    assert_eq!(expected, format_table(input, &config));
+    assert_eq!(expected, config.format(input));
 }
 
 #[test]
@@ -311,13 +311,13 @@ fn partial_header_at_start() {
                     │ 7 │ 8 │ 9 │ 0 │\n\
                     └───┴───┴───┴───┘\n";
 
-    assert_eq!(expected, format_table(input, &config));
+    assert_eq!(expected, config.format(input));
 }
 
 #[test]
 fn partial_header_at_end() {
-    let mut config = TableConfig::default();
-    config.columns.insert(2, ColumnConfig {header: String::from("c"), ..ColumnConfig::default()});
+    let mut config = AsciiTable::default();
+    config.columns.insert(2, Column {header: String::from("c"), ..Column::default()});
 
     let input = vec![&[1, 2, 3], &[4, 5, 6], &[7, 8, 9]];
     let expected = "┌───┬───┬───┐\n\
@@ -328,7 +328,7 @@ fn partial_header_at_end() {
                     │ 7 │ 8 │ 9 │\n\
                     └───┴───┴───┘\n";
 
-    assert_eq!(expected, format_table(input, &config));
+    assert_eq!(expected, config.format(input));
 }
 
 #[test]
@@ -343,13 +343,13 @@ fn ignore_unused_header() {
                     │ 3 │\n\
                     └───┘\n";
 
-    assert_eq!(expected, format_table(input, &config));
+    assert_eq!(expected, config.format(input));
 }
 
 #[test]
 fn align_right() {
-    let mut config = TableConfig::default();
-    config.columns.insert(0, ColumnConfig {header: String::from("a"), align: Right});
+    let mut config = AsciiTable::default();
+    config.columns.insert(0, Column {header: String::from("a"), align: Right});
 
     let input = vec![&[1], &[23], &[456]];
     let expected = "┌─────┐\n\
@@ -360,13 +360,13 @@ fn align_right() {
                     │ 456 │\n\
                     └─────┘\n";
 
-    assert_eq!(expected, format_table(input, &config));
+    assert_eq!(expected, config.format(input));
 }
 
 #[test]
 fn align_center() {
-    let mut config = TableConfig::default();
-    config.columns.insert(0, ColumnConfig {header: String::from("a"), align: Center});
+    let mut config = AsciiTable::default();
+    config.columns.insert(0, Column {header: String::from("a"), align: Center});
 
     let input = vec![&[1], &[23], &[456], &[7890], &[12345]];
     let expected = "┌───────┐\n\
@@ -379,7 +379,7 @@ fn align_center() {
                     │ 12345 │\n\
                     └───────┘\n";
 
-    assert_eq!(expected, format_table(input, &config));
+    assert_eq!(expected, config.format(input));
 }
 
 #[test]
@@ -394,5 +394,5 @@ fn mixed_types() {
                     │ 7 │ 8 │ 9 │\n\
                     └───┴───┴───┘\n";
 
-    assert_eq!(expected, format_table(input, &config));
+    assert_eq!(expected, config.format(input));
 }

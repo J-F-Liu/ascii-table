@@ -20,11 +20,11 @@
 //! # Example
 //!
 //! ```
-//! use ascii_table::{AsciiTable, print_table};
+//! use ascii_table::AsciiTable;
 //!
-//! let config = AsciiTable::default();
+//! let ascii_table = AsciiTable::default();
 //! let data = vec![&[1, 2, 3], &[4, 5, 6], &[7, 8, 9]];
-//! print_table(data, &config);
+//! ascii_table.print(data);
 //! // ┌───┬───┬───┐
 //! // │ 1 │ 2 │ 3 │
 //! // │ 4 │ 5 │ 6 │
