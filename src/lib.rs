@@ -162,8 +162,8 @@ impl AsciiTable {
 
     fn stringify<L1, L2, T>(&self, data: L1) -> Vec<Vec<String>>
     where L1: IntoIterator<Item = L2>,
-        L2: IntoIterator<Item = T>,
-        T: ToString {
+          L2: IntoIterator<Item = T>,
+          T: ToString {
         data.into_iter().map(|row| row.into_iter().map(|cell| cell.to_string()).collect()).collect()
     }
 
