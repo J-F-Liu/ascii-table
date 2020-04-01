@@ -127,7 +127,7 @@ impl AsciiTable {
             return self.format_empty()
         }
 
-        let num_cols = data.iter().map(|row| row.len()).max().unwrap();
+        let num_cols = data.iter().map(|row| row.len()).max().unwrap_or(0);
         let data = self.square_data(data, num_cols);
         let has_header = self.columns.iter().any(|(_, col)| !col.header.is_empty());
         let widths = self.column_widths(&data, num_cols);
@@ -153,7 +153,7 @@ impl AsciiTable {
             false
         } else if self.width < 4 {
             false
-        } else if data.iter().map(|x| x.len()).max().unwrap_or(0) == 0 {
+        } else if data.iter().map(|row| row.len()).max().unwrap_or(0) == 0 {
             false
         } else {
             true
