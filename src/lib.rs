@@ -135,8 +135,9 @@ impl AsciiTable {
         let mut result = String::new();
         result.push_str(&self.format_first(&widths));
         if has_header {
+            let default_conf = &DEFAULT_COLUMN;
             let header: Vec<_> = (0..num_cols).map(|a|
-                self.columns.get(&a).unwrap_or(&DEFAULT_COLUMN).header.clone()
+                self.columns.get(&a).unwrap_or(default_conf).header.as_str()
             ).collect();
             result.push_str(&self.format_header_row(&header, &widths));
             result.push_str(&self.format_middle(&widths));
@@ -233,14 +234,14 @@ impl AsciiTable {
             let width = widths[a];
             let default_conf = &DEFAULT_COLUMN;
             let conf = self.columns.get(&a).unwrap_or(default_conf);
-            self.make_cell(cell, width, ' ', conf.align)
+            self.format_cell(cell, width, ' ', conf.align)
         }).collect();
         self.format_line(&row, &format!("{}{}", NS, ' '), &format!("{}{}{}", ' ', NS, ' '), &format!("{}{}", ' ', NS))
     }
 
-    fn format_header_row(&self, row: &[String], widths: &[usize]) -> String {
+    fn format_header_row(&self, row: &[&str], widths: &[usize]) -> String {
         let row: Vec<String> = row.iter().zip(widths.iter()).map(|(cell, &width)|
-            self.make_cell(&cell, width, ' ', Align::Left)
+            self.format_cell(cell, width, ' ', Align::Left)
         ).collect();
         self.format_line(&row, &format!("{}{}", NS, ' '), &format!("{}{}{}", ' ', NS, ' '), &format!("{}{}", ' ', NS))
     }
@@ -250,7 +251,7 @@ impl AsciiTable {
         self.format_line(&row, &format!("{}{}", NE, EW), &format!("{}{}{}", EW, NEW, EW), &format!("{}{}", EW, NW))
     }
 
-    fn make_cell(&self, text: &str, len: usize, pad: char, align: Align) -> String {
+    fn format_cell(&self, text: &str, len: usize, pad: char, align: Align) -> String {
         if text.chars().count() > len {
             let mut result: String = text.chars().take(len).collect();
             if result.pop().is_some() {
