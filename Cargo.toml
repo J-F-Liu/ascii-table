@@ -1,6 +1,6 @@
 [package]
 name = "ascii_table"
-version = "2.1.0"
+version = "3.0.0"
 authors = ["Gerrit Viljoen <red.striker@protonmail.com>"]
 license = "GPL-3.0+"
 edition = "2018"
