@@ -31,11 +31,49 @@
 //! // │ 7 │ 8 │ 9 │
 //! // └───┴───┴───┘
 //! ```
+//!
+//! # Example
+//!
+//! ```
+//! use std::fmt::Display;
+//! use ascii_table::{AsciiTable, Column, Align};
+//!
+//! let mut ascii_table = AsciiTable::default();
+//! ascii_table.max_width = 26;
+//!
+//! let mut column = Column::default();
+//! column.header = "H1".into();
+//! column.align = Align::Left;
+//! ascii_table.columns.insert(0, column);
+//!
+//! let mut column = Column::default();
+//! column.header = "H2".into();
+//! column.align = Align::Center;
+//! ascii_table.columns.insert(1, column);
+//!
+//! let mut column = Column::default();
+//! column.header = "H3".into();
+//! column.align = Align::Right;
+//! ascii_table.columns.insert(2, column);
+//!
+//! let data: Vec<Vec<&dyn Display>> = vec![
+//!     vec![&'v', &'v', &'v'],
+//!     vec![&123, &456, &789, &"abcdef"]
+//! ];
+//! ascii_table.print(data);
+//! // ┌─────┬─────┬─────┬──────┐
+//! // │ H1  │ H2  │ H3  │      │
+//! // ├─────┼─────┼─────┼──────┤
+//! // │ v   │  v  │   v │      │
+//! // │ 123 │ 456 │ 789 │ abc+ │
+//! // └─────┴─────┴─────┴──────┘
+//! ```
 
 #[cfg(test)]
 mod test;
 
 use std::collections::BTreeMap;
+use std::fmt::Display;
 
 const SE: &str = "┌";
 const NW: &str = "┘";
@@ -94,9 +132,9 @@ impl Default for Column {
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, Ord, PartialOrd)]
 pub enum Align {
-    Right,
+    Left,
     Center,
-    Left
+    Right
 }
 
 impl Default for Align {
@@ -111,14 +149,14 @@ impl AsciiTable {
     pub fn print<L1, L2, T>(&self, data: L1)
     where L1: IntoIterator<Item = L2>,
           L2: IntoIterator<Item = T>,
-          T: ToString {
+          T: Display {
         print!("{}", self.format(data))
     }
 
     pub fn format<L1, L2, T>(&self, data: L1) -> String
     where L1: IntoIterator<Item = L2>,
           L2: IntoIterator<Item = T>,
-          T: ToString {
+          T: Display {
         self.format_inner(self.stringify(data))
     }
 
@@ -164,7 +202,7 @@ impl AsciiTable {
     fn stringify<L1, L2, T>(&self, data: L1) -> Vec<Vec<String>>
     where L1: IntoIterator<Item = L2>,
           L2: IntoIterator<Item = T>,
-          T: ToString {
+          T: Display {
         data.into_iter().map(|row| row.into_iter().map(|cell| cell.to_string()).collect()).collect()
     }
 
