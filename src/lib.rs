@@ -254,7 +254,7 @@ impl AsciiTable {
         if text.chars().count() > len {
             let mut result: String = text.chars().take(len).collect();
             if result.pop().is_some() {
-            result.push('+')
+                result.push('+')
             }
             result
         } else {
