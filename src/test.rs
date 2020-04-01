@@ -22,9 +22,9 @@ use std::fmt::Display;
 
 fn cube_config() -> AsciiTable {
     let mut result = AsciiTable::default();
-    result.columns.insert(0, Column::new("a", Left));
-    result.columns.insert(1, Column::new("b", Left));
-    result.columns.insert(2, Column::new("c", Left));
+    result.columns.insert(0, Column::with_header("a"));
+    result.columns.insert(1, Column::with_header("b"));
+    result.columns.insert(2, Column::with_header("c"));
     result
 }
 

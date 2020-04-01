@@ -60,13 +60,6 @@ pub struct AsciiTable {
     pub columns: BTreeMap<usize, Column>
 }
 
-impl AsciiTable {
-
-    pub fn new(width: usize, columns: BTreeMap<usize, Column>) -> Self { // TODO: remove
-        Self { width, columns }
-    }
-}
-
 impl Default for AsciiTable {
 
     fn default() -> Self {
@@ -77,7 +70,7 @@ impl Default for AsciiTable {
     }
 }
 
-#[derive(Clone, Debug, Default, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Column {
     pub header: String,
     pub align: Align
@@ -85,9 +78,17 @@ pub struct Column {
 
 impl Column {
 
-    pub fn new<T>(header: T, align: Align) -> Self // TODO: remove
-    where T: AsRef<str> {
-        Self { header: header.as_ref().to_string(), align }
+    pub fn with_header(header: &str) -> Self {
+        let mut result = Self::default();
+        result.header = header.into();
+        result
+    }
+}
+
+impl Default for Column {
+
+    fn default() -> Self {
+        DEFAULT_COLUMN
     }
 }
 
