@@ -16,7 +16,7 @@
 // along with ascii-table.  If not, see <http://www.gnu.org/licenses/>.
 
 use crate::{TableConfig, ColumnConfig, format_table};
-use crate::Align::{Left, Right, Center};
+use crate::Align::*;
 
 use std::fmt::Display;
 

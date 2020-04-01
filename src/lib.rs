@@ -20,9 +20,9 @@
 //! # Example
 //!
 //! ```
-//! use ascii_table::{TableConfig, print_table};
+//! use ascii_table::{AsciiTable, print_table};
 //!
-//! let config = TableConfig::default();
+//! let config = AsciiTable::default();
 //! let data = vec![&[1, 2, 3], &[4, 5, 6], &[7, 8, 9]];
 //! print_table(data, &config);
 //! // ┌───┬───┬───┐
@@ -32,12 +32,10 @@
 //! // └───┴───┴───┘
 //! ```
 
-mod config;
-#[cfg(test)] mod test;
+#[cfg(test)]
+mod test;
 
-pub use config::*;
-
-use std::fmt::Display;
+use std::collections::BTreeMap;
 
 const SE: &str = "┌";
 const NW: &str = "┘";
@@ -50,178 +48,232 @@ const NWS: &str = "┤";
 const NEW: &str = "┴";
 const NEWS: &str = "┼";
 const EW: &str = "─";
+const DEFAULT_ALIGN: Align = Align::Left;
+const DEFAULT_COLUMN: Column = Column {
+    header: String::new(),
+    align: DEFAULT_ALIGN
+};
 
-pub fn print_table<L1, L2, T>(data: L1, conf: &TableConfig)
-where L1: IntoIterator<Item = L2>,
-      L2: IntoIterator<Item = T>,
-      T: Display {
-    print!("{}", format_table(data, conf))
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct AsciiTable {
+    pub width: usize,
+    pub columns: BTreeMap<usize, Column>
 }
 
-pub fn format_table<L1, L2, T>(data: L1, conf: &TableConfig) -> String
-where L1: IntoIterator<Item = L2>,
-      L2: IntoIterator<Item = T>,
-      T: Display {
-    format_table_inner(stringify(data), conf)
-}
+impl AsciiTable {
 
-fn format_table_inner(data: Vec<Vec<String>>, conf: &TableConfig) -> String {
-    if !valid(&data, conf) {
-        return format_empty()
-    }
-
-    let num_cols = data.iter().map(|x| x.len()).max().unwrap();
-    let data = square_data(data, num_cols);
-    let conf = correct_config(conf, num_cols);
-    let header = conf.columns.iter().any(|(_, x)| x.header.chars().count() > 0);
-    let widths = column_widths(&data, &conf);
-
-    let mut result = String::new();
-    result.push_str(&format_first(&widths));
-    if header {
-        let x: Vec<_> = conf.columns.iter().map(|(_, x)| x.header.clone()).collect();
-        result.push_str(&format_row2(&x, &widths));
-        result.push_str(&format_middle(&widths));
-    }
-    for row in data {
-        result.push_str(&format_row(&row, &conf, &widths));
-    }
-    result.push_str(&format_last(&widths));
-    result
-}
-
-fn valid(data: &[Vec<String>], conf: &TableConfig) -> bool {
-    if data.len() == 0 {
-        false
-    } else if conf.width < 4 {
-        false
-    } else if data.iter().map(|x| x.len()).max().unwrap_or(0) == 0 {
-        false
-    } else {
-        true
+    pub fn new(width: usize, columns: BTreeMap<usize, Column>) -> Self { // TODO: remove
+        Self { width, columns }
     }
 }
 
-fn stringify<L1, L2, T>(data: L1) -> Vec<Vec<String>>
-where L1: IntoIterator<Item = L2>,
-      L2: IntoIterator<Item = T>,
-      T: Display {
-    data.into_iter().map(|row| row.into_iter().map(|cell| cell.to_string()).collect()).collect()
-}
+impl Default for AsciiTable {
 
-fn square_data(mut data: Vec<Vec<String>>, num_cols: usize) -> Vec<Vec<String>> {
-    for row in data.iter_mut() {
-        while row.len() < num_cols {
-            row.push(String::new())
+    fn default() -> Self {
+        Self {
+            width: 80,
+            columns: BTreeMap::new()
         }
     }
-    data
 }
 
-fn correct_config(conf: &TableConfig, num_cols: usize) -> TableConfig {
-    let mut conf = conf.clone();
-    for col in 0..num_cols {
-        if conf.columns.get(&col).is_none() {
-            conf.columns.insert(col, ColumnConfig::default());
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
+pub struct Column {
+    pub header: String,
+    pub align: Align
+}
+
+impl Column {
+
+    pub fn new<T>(header: T, align: Align) -> Self // TODO: remove
+    where T: AsRef<str> {
+        Self { header: header.as_ref().to_string(), align }
+    }
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, Ord, PartialOrd)]
+pub enum Align {
+    Right,
+    Center,
+    Left
+}
+
+impl Default for Align {
+
+    fn default() -> Self {
+        DEFAULT_ALIGN
+    }
+}
+
+impl AsciiTable {
+
+    pub fn print<L1, L2, T>(&self, data: L1)
+    where L1: IntoIterator<Item = L2>,
+          L2: IntoIterator<Item = T>,
+          T: ToString {
+        print!("{}", self.format(data))
+    }
+
+    pub fn format<L1, L2, T>(&self, data: L1) -> String
+    where L1: IntoIterator<Item = L2>,
+          L2: IntoIterator<Item = T>,
+          T: ToString {
+        self.format_inner(self.stringify(data))
+    }
+
+    fn format_inner(&self, data: Vec<Vec<String>>) -> String {
+        if !self.valid(&data) {
+            return self.format_empty()
         }
-    }
-    conf.columns.split_off(&num_cols);
-    conf
-}
 
-fn column_widths(data: &[Vec<String>], conf: &TableConfig) -> Vec<usize> {
-    let result: Vec<_> = (0..conf.columns.len()).map(|a| {
-        let column_width = data.iter().map(|row| row[a].chars().count()).max().unwrap();
-        let header_width = conf.columns[&a].header.chars().count();
-        column_width.max(header_width)
-    }).collect();
-    truncate_widths(result, conf)
-}
+        let num_cols = data.iter().map(|x| x.len()).max().unwrap();
+        let data = self.square_data(data, num_cols);
+        let has_header = self.columns.iter().any(|(_, x)| x.header.chars().count() > 0); // TODO: !is_empty
+        let widths = self.column_widths(&data, num_cols);
 
-fn truncate_widths(mut widths: Vec<usize>, conf: &TableConfig) -> Vec<usize> {
-    let max_width = conf.width;
-    let table_padding = ((widths.len() - 1) * 3) + 4;
-    while widths.iter().sum::<usize>() + table_padding > max_width &&
-          *widths.iter().max().unwrap() > 0 {
-        let max = widths.iter().max().unwrap();
-        let idx = widths.iter().rposition(|x| x == max).unwrap();
-        widths[idx] -= 1;
-    }
-    widths
-}
-
-fn format_line(row: &[String], head: &str, delim: &str, tail: &str) -> String {
-    let mut result = String::new();
-    result.push_str(head);
-    for cell in row {
-        result.push_str(&format!("{}{}", cell, delim));
-    }
-    for _ in 0..delim.chars().count() {
-        result.pop();
-    }
-    result.push_str(tail);
-    result.push('\n');
-    result
-}
-
-fn format_empty() -> String {
-    format_first(&vec![0])
-    + &format_line(&vec![String::new()], &format!("{}{}", NS, ' '), &format!("{}{}{}", ' ', NS, ' '), &format!("{}{}", ' ', NS))
-    + &format_last(&vec![0])
-}
-
-fn format_first(widths: &[usize]) -> String {
-    let row: Vec<String> = widths.iter().map(|&x| EW.repeat(x)).collect();
-    format_line(&row, &format!("{}{}", SE, EW), &format!("{}{}{}", EW, EWS, EW), &format!("{}{}", EW, SW))
-}
-
-fn format_middle(widths: &[usize]) -> String {
-    let row: Vec<String> = widths.iter().map(|&x| EW.repeat(x)).collect();
-    format_line(&row, &format!("{}{}", NES, EW), &format!("{}{}{}", EW, NEWS, EW), &format!("{}{}", EW, NWS))
-}
-
-fn format_row(row: &[String], conf: &TableConfig, widths: &[usize]) -> String {
-    let row: Vec<String> = row.iter().zip(widths.iter()).zip(conf.columns.iter()).map(|((cell, &width), (_, conf))|
-        make_cell(&cell, width, ' ', conf.align)
-    ).collect();
-    format_line(&row, &format!("{}{}", NS, ' '), &format!("{}{}{}", ' ', NS, ' '), &format!("{}{}", ' ', NS))
-}
-
-fn format_row2(row: &[String], widths: &[usize]) -> String {
-    let row: Vec<String> = row.iter().zip(widths.iter()).map(|(cell, &width)|
-        make_cell(&cell, width, ' ', Align::Left)
-    ).collect();
-    format_line(&row, &format!("{}{}", NS, ' '), &format!("{}{}{}", ' ', NS, ' '), &format!("{}{}", ' ', NS))
-}
-
-fn format_last(widths: &[usize]) -> String {
-    let row: Vec<String> = widths.iter().map(|&x| EW.repeat(x)).collect();
-    format_line(&row, &format!("{}{}", NE, EW), &format!("{}{}{}", EW, NEW, EW), &format!("{}{}", EW, NW))
-}
-
-fn make_cell(text: &str, len: usize, pad: char, align: Align) -> String {
-    if text.chars().count() > len {
-        let mut result: String = text.chars().take(len).collect();
-        if result.pop().is_some() {
-          result.push('+')
+        let mut result = String::new();
+        result.push_str(&self.format_first(&widths));
+        if has_header {
+            let header: Vec<_> = (0..num_cols).map(|a|
+                self.columns.get(&a).unwrap_or(&DEFAULT_COLUMN).header.clone()
+            ).collect();
+            result.push_str(&self.format_row2(&header, &widths));
+            result.push_str(&self.format_middle(&widths));
         }
+        for row in data {
+            result.push_str(&self.format_row(&row, &widths));
+        }
+        result.push_str(&self.format_last(&widths));
         result
-    } else {
-        let mut result = text.to_string();
-        match align {
-            Align::Left => while result.chars().count() < len {
-                result.push(pad)
+    }
+
+    fn valid(&self, data: &[Vec<String>]) -> bool {
+        if data.len() == 0 {
+            false
+        } else if self.width < 4 {
+            false
+        } else if data.iter().map(|x| x.len()).max().unwrap_or(0) == 0 {
+            false
+        } else {
+            true
+        }
+    }
+
+    fn stringify<L1, L2, T>(&self, data: L1) -> Vec<Vec<String>>
+    where L1: IntoIterator<Item = L2>,
+        L2: IntoIterator<Item = T>,
+        T: ToString {
+        data.into_iter().map(|row| row.into_iter().map(|cell| cell.to_string()).collect()).collect()
+    }
+
+    fn square_data(&self, mut data: Vec<Vec<String>>, num_cols: usize) -> Vec<Vec<String>> {
+        for row in data.iter_mut() {
+            while row.len() < num_cols {
+                row.push(String::new())
             }
-            Align::Right => while result.chars().count() < len {
-                result.insert(0, pad)
+        }
+        data
+    }
+
+    fn column_widths(&self, data: &[Vec<String>], num_cols: usize) -> Vec<usize> {
+        let result: Vec<_> = (0..num_cols).map(|a| {
+            let column_width = data.iter().map(|row| row[a].chars().count()).max().unwrap();
+            let header_width = self.columns.get(&a).unwrap_or(&DEFAULT_COLUMN).header.chars().count();
+            column_width.max(header_width)
+        }).collect();
+        self.truncate_widths(result)
+    }
+
+    fn truncate_widths(&self, mut widths: Vec<usize>) -> Vec<usize> {
+        let max_width = self.width;
+        let table_padding = ((widths.len() - 1) * 3) + 4;
+        while widths.iter().sum::<usize>() + table_padding > max_width &&
+            *widths.iter().max().unwrap() > 0 {
+            let max = widths.iter().max().unwrap();
+            let idx = widths.iter().rposition(|x| x == max).unwrap();
+            widths[idx] -= 1;
+        }
+        widths
+    }
+
+    fn format_line(&self, row: &[String], head: &str, delim: &str, tail: &str) -> String {
+        let mut result = String::new();
+        result.push_str(head);
+        for cell in row {
+            result.push_str(&format!("{}{}", cell, delim));
+        }
+        for _ in 0..delim.chars().count() {
+            result.pop();
+        }
+        result.push_str(tail);
+        result.push('\n');
+        result
+    }
+
+    fn format_empty(&self) -> String {
+        self.format_first(&vec![0])
+        + &self.format_line(&vec![String::new()], &format!("{}{}", NS, ' '), &format!("{}{}{}", ' ', NS, ' '), &format!("{}{}", ' ', NS))
+        + &self.format_last(&vec![0])
+    }
+
+    fn format_first(&self, widths: &[usize]) -> String {
+        let row: Vec<String> = widths.iter().map(|&x| EW.repeat(x)).collect();
+        self.format_line(&row, &format!("{}{}", SE, EW), &format!("{}{}{}", EW, EWS, EW), &format!("{}{}", EW, SW))
+    }
+
+    fn format_middle(&self, widths: &[usize]) -> String {
+        let row: Vec<String> = widths.iter().map(|&x| EW.repeat(x)).collect();
+        self.format_line(&row, &format!("{}{}", NES, EW), &format!("{}{}{}", EW, NEWS, EW), &format!("{}{}", EW, NWS))
+    }
+
+    fn format_row(&self, row: &[String], widths: &[usize]) -> String {
+        let row: Vec<_> = (0..widths.len()).map(|a| {
+            let cell = &row[a];
+            let width = widths[a];
+            let default_conf = &DEFAULT_COLUMN;
+            let conf = self.columns.get(&a).unwrap_or(default_conf);
+            self.make_cell(cell, width, ' ', conf.align)
+        }).collect();
+        self.format_line(&row, &format!("{}{}", NS, ' '), &format!("{}{}{}", ' ', NS, ' '), &format!("{}{}", ' ', NS))
+    }
+
+    // TODO: Better name - format_header_row
+    fn format_row2(&self, row: &[String], widths: &[usize]) -> String {
+        let row: Vec<String> = row.iter().zip(widths.iter()).map(|(cell, &width)|
+            self.make_cell(&cell, width, ' ', Align::Left)
+        ).collect();
+        self.format_line(&row, &format!("{}{}", NS, ' '), &format!("{}{}{}", ' ', NS, ' '), &format!("{}{}", ' ', NS))
+    }
+
+    fn format_last(&self, widths: &[usize]) -> String {
+        let row: Vec<String> = widths.iter().map(|&x| EW.repeat(x)).collect();
+        self.format_line(&row, &format!("{}{}", NE, EW), &format!("{}{}{}", EW, NEW, EW), &format!("{}{}", EW, NW))
+    }
+
+    fn make_cell(&self, text: &str, len: usize, pad: char, align: Align) -> String {
+        if text.chars().count() > len {
+            let mut result: String = text.chars().take(len).collect();
+            if result.pop().is_some() {
+            result.push('+')
             }
-            Align::Center => while result.chars().count() < len {
-                result.push(pad);
-                if result.chars().count() < len {
+            result
+        } else {
+            let mut result = text.to_string();
+            match align {
+                Align::Left => while result.chars().count() < len {
+                    result.push(pad)
+                }
+                Align::Right => while result.chars().count() < len {
                     result.insert(0, pad)
                 }
+                Align::Center => while result.chars().count() < len {
+                    result.push(pad);
+                    if result.chars().count() < len {
+                        result.insert(0, pad)
+                    }
+                }
             }
+            result
         }
-        result
     }
 }
