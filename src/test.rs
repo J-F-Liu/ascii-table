@@ -1,4 +1,4 @@
-// Copyright 2019 Gerrit Viljoen
+// Copyright 2019-2020 Gerrit Viljoen
 
 // This file is part of ascii-table.
 //
