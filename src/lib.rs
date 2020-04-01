@@ -56,7 +56,7 @@ const DEFAULT_COLUMN: Column = Column {
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct AsciiTable {
-    pub width: usize,
+    pub max_width: usize,
     pub columns: BTreeMap<usize, Column>
 }
 
@@ -64,7 +64,7 @@ impl Default for AsciiTable {
 
     fn default() -> Self {
         Self {
-            width: 80,
+            max_width: 80,
             columns: BTreeMap::new()
         }
     }
@@ -151,7 +151,7 @@ impl AsciiTable {
     fn valid(&self, data: &Vec<Vec<String>>, num_cols: usize) -> bool {
         if data.len() == 0 {
             false
-        } else if self.width < 4 {
+        } else if self.max_width < 4 {
             false
         } else if num_cols == 0 {
             false
@@ -186,7 +186,7 @@ impl AsciiTable {
     }
 
     fn truncate_widths(&self, mut widths: Vec<usize>) -> Vec<usize> {
-        let max_width = self.width;
+        let max_width = self.max_width;
         let table_padding = ((widths.len() - 1) * 3) + 4;
         while widths.iter().sum::<usize>() + table_padding > max_width &&
             *widths.iter().max().unwrap() > 0 {

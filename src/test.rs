@@ -96,7 +96,7 @@ fn one_cell() {
 #[test]
 fn smallest_cell() {
     let config = AsciiTable {
-        width: 4,
+        max_width: 4,
         ..default_config()
     };
     let input = vec![&[123]];
@@ -110,7 +110,7 @@ fn smallest_cell() {
 #[test]
 fn smallest_cube() {
     let config = AsciiTable {
-        width: 4,
+        max_width: 4,
         ..default_config()
     };
     let input = vec![&[1, 2, 3], &[4, 5, 6], &[7, 8, 9]];
@@ -126,7 +126,7 @@ fn smallest_cube() {
 #[test]
 fn show_no_content_for_cell() {
     let config = AsciiTable {
-        width: 5,
+        max_width: 5,
         ..default_config()
     };
     let input = vec![&[123]];
@@ -140,7 +140,7 @@ fn show_no_content_for_cell() {
 #[test]
 fn show_one_character_for_cell() {
     let config = AsciiTable {
-        width: 6,
+        max_width: 6,
         ..default_config()
     };
     let input = vec![&[123]];
@@ -154,7 +154,7 @@ fn show_one_character_for_cell() {
 #[test]
 fn smallest_cell_with_header() {
     let mut config = AsciiTable {
-        width: 4,
+        max_width: 4,
         ..default_config()
     };
     config.columns.insert(0, Column {header: "foo".to_string(), ..Column::default()});
@@ -171,7 +171,7 @@ fn smallest_cell_with_header() {
 #[test]
 fn smallest_cube_with_header() {
     let mut config = AsciiTable {
-        width: 4,
+        max_width: 4,
         ..default_config()
     };
     config.columns.insert(0, Column {header: "abc".to_string(), ..Column::default()});
@@ -192,7 +192,7 @@ fn smallest_cube_with_header() {
 #[test]
 fn show_no_content_for_header() {
     let mut config = AsciiTable {
-        width: 5,
+        max_width: 5,
         ..default_config()
     };
     config.columns.insert(0, Column {header: "abc".to_string(), ..Column::default()});
@@ -209,7 +209,7 @@ fn show_no_content_for_header() {
 #[test]
 fn show_one_character_for_header() {
     let mut config = AsciiTable {
-        width: 6,
+        max_width: 6,
         ..default_config()
     };
     config.columns.insert(0, Column {header: "abc".to_string(), ..Column::default()});
