@@ -89,7 +89,8 @@ const EW: &str = "─";
 const DEFAULT_ALIGN: Align = Align::Left;
 const DEFAULT_COLUMN: Column = Column {
     header: String::new(),
-    align: DEFAULT_ALIGN
+    align: DEFAULT_ALIGN,
+    max_width: usize::max_value()
 };
 
 #[derive(Clone, Debug, Eq, PartialEq)]
