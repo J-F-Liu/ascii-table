@@ -123,11 +123,11 @@ impl AsciiTable {
     }
 
     fn format_inner(&self, data: Vec<Vec<String>>) -> String {
-        if !self.valid(&data) {
+        let num_cols = data.iter().map(|row| row.len()).max().unwrap_or(0);
+        if !self.valid(&data, num_cols) {
             return self.format_empty()
         }
 
-        let num_cols = data.iter().map(|row| row.len()).max().unwrap_or(0);
         let data = self.square_data(data, num_cols);
         let has_header = self.columns.iter().any(|(_, col)| !col.header.is_empty());
         let widths = self.column_widths(&data, num_cols);
@@ -148,12 +148,12 @@ impl AsciiTable {
         result
     }
 
-    fn valid(&self, data: &[Vec<String>]) -> bool {
+    fn valid(&self, data: &Vec<Vec<String>>, num_cols: usize) -> bool {
         if data.len() == 0 {
             false
         } else if self.width < 4 {
             false
-        } else if data.iter().map(|row| row.len()).max().unwrap_or(0) == 0 {
+        } else if num_cols == 0 {
             false
         } else {
             true
