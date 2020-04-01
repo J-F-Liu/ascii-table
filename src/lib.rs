@@ -138,7 +138,7 @@ impl AsciiTable {
             let header: Vec<_> = (0..num_cols).map(|a|
                 self.columns.get(&a).unwrap_or(&DEFAULT_COLUMN).header.clone()
             ).collect();
-            result.push_str(&self.format_row2(&header, &widths));
+            result.push_str(&self.format_header_row(&header, &widths));
             result.push_str(&self.format_middle(&widths));
         }
         for row in data {
@@ -238,8 +238,7 @@ impl AsciiTable {
         self.format_line(&row, &format!("{}{}", NS, ' '), &format!("{}{}{}", ' ', NS, ' '), &format!("{}{}", ' ', NS))
     }
 
-    // TODO: Better name - format_header_row
-    fn format_row2(&self, row: &[String], widths: &[usize]) -> String {
+    fn format_header_row(&self, row: &[String], widths: &[usize]) -> String {
         let row: Vec<String> = row.iter().zip(widths.iter()).map(|(cell, &width)|
             self.make_cell(&cell, width, ' ', Align::Left)
         ).collect();
