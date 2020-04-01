@@ -111,7 +111,8 @@ impl Default for AsciiTable {
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Column {
     pub header: String,
-    pub align: Align
+    pub align: Align,
+    pub max_width: usize // TODO:
 }
 
 impl Column {
