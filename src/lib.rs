@@ -113,7 +113,7 @@ impl Default for AsciiTable {
 pub struct Column {
     pub header: String,
     pub align: Align,
-    pub max_width: usize // TODO:
+    pub max_width: usize
 }
 
 impl Column {
@@ -194,11 +194,15 @@ impl AsciiTable {
             false
         } else if num_cols == 0 {
             false
-        } else if self.max_width < ((num_cols - 1) * 3) + 4 {
+        } else if self.max_width < Self::smallest_width(num_cols) {
             false
         } else {
             true
         }
+    }
+
+    fn smallest_width(num_cols: usize) -> usize {
+        ((num_cols - 1) * 3) + 4
     }
 
     fn stringify<L1, L2, T>(&self, data: L1) -> Vec<Vec<String>>
@@ -230,7 +234,7 @@ impl AsciiTable {
 
     fn truncate_widths(&self, mut widths: Vec<usize>) -> Vec<usize> {
         let max_width = self.max_width;
-        let table_padding = ((widths.len() - 1) * 3) + 4;
+        let table_padding = Self::smallest_width(widths.len());
         while widths.iter().sum::<usize>() + table_padding > max_width &&
             *widths.iter().max().unwrap() > 0 {
             let max = widths.iter().max().unwrap();
