@@ -118,7 +118,7 @@ fn smallest_cell2() {
 #[test]
 fn smallest_cube() {
     let config = AsciiTable {
-        max_width: 4,
+        max_width: 10,
         ..AsciiTable::default()
     };
     let input = vec![&[1, 2, 3], &[4, 5, 6], &[7, 8, 9]];
@@ -233,7 +233,7 @@ fn smallest_cell_with_header2() {
 #[test]
 fn smallest_cube_with_header() {
     let mut config = AsciiTable {
-        max_width: 4,
+        max_width: 10,
         ..AsciiTable::default()
     };
     config.columns.insert(0, Column {header: "abc".to_string(), ..Column::default()});

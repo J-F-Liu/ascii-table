@@ -192,9 +192,9 @@ impl AsciiTable {
     fn valid(&self, data: &Vec<Vec<String>>, num_cols: usize) -> bool {
         if data.len() == 0 {
             false
-        } else if self.max_width < 4 {
-            false
         } else if num_cols == 0 {
+            false
+        } else if self.max_width < ((num_cols - 1) * 3) + 4 {
             false
         } else {
             true
