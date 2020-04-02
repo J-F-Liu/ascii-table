@@ -28,13 +28,9 @@ fn cube_config() -> AsciiTable {
     result
 }
 
-fn default_config() -> AsciiTable {
-    AsciiTable::default()
-}
-
 #[test]
 fn empty_rows() {
-    let config = default_config();
+    let config = AsciiTable::default();
     let input: Vec<Vec<i32>> = vec![];
     let expected = "┌──┐\n\
                     │  │\n\
@@ -45,7 +41,7 @@ fn empty_rows() {
 
 #[test]
 fn empty_columns() {
-    let config = default_config();
+    let config = AsciiTable::default();
     let input: Vec<Vec<i32>> = vec![vec![]];
     let expected = "┌──┐\n\
                     │  │\n\
@@ -71,7 +67,7 @@ fn cube_with_header() {
 
 #[test]
 fn cube_with_no_header() {
-    let config = default_config();
+    let config = AsciiTable::default();
     let input = vec![&[1, 2, 3], &[4, 5, 6], &[7, 8, 9]];
     let expected = "┌───┬───┬───┐\n\
                     │ 1 │ 2 │ 3 │\n\
@@ -84,7 +80,7 @@ fn cube_with_no_header() {
 
 #[test]
 fn one_cell() {
-    let config = default_config();
+    let config = AsciiTable::default();
     let input = vec![&[1]];
     let expected = "┌───┐\n\
                     │ 1 │\n\
@@ -97,8 +93,20 @@ fn one_cell() {
 fn smallest_cell() {
     let config = AsciiTable {
         max_width: 4,
-        ..default_config()
+        ..AsciiTable::default()
     };
+    let input = vec![&[123]];
+    let expected = "┌──┐\n\
+                    │  │\n\
+                    └──┘\n";
+
+    assert_eq!(expected, config.format(input));
+}
+
+#[test]
+fn smallest_cell2() {
+    let mut config = AsciiTable::default();
+    config.columns.insert(0, Column {max_width: 0, ..Column::default()});
     let input = vec![&[123]];
     let expected = "┌──┐\n\
                     │  │\n\
@@ -111,8 +119,24 @@ fn smallest_cell() {
 fn smallest_cube() {
     let config = AsciiTable {
         max_width: 4,
-        ..default_config()
+        ..AsciiTable::default()
     };
+    let input = vec![&[1, 2, 3], &[4, 5, 6], &[7, 8, 9]];
+    let expected = "┌──┬──┬──┐\n\
+                    │  │  │  │\n\
+                    │  │  │  │\n\
+                    │  │  │  │\n\
+                    └──┴──┴──┘\n";
+
+    assert_eq!(expected, config.format(input));
+}
+
+#[test]
+fn smallest_cube2() {
+    let mut config = AsciiTable::default();
+    config.columns.insert(0, Column {max_width: 0, ..Column::default()});
+    config.columns.insert(1, Column {max_width: 0, ..Column::default()});
+    config.columns.insert(2, Column {max_width: 0, ..Column::default()});
     let input = vec![&[1, 2, 3], &[4, 5, 6], &[7, 8, 9]];
     let expected = "┌──┬──┬──┐\n\
                     │  │  │  │\n\
@@ -127,8 +151,20 @@ fn smallest_cube() {
 fn show_no_content_for_cell() {
     let config = AsciiTable {
         max_width: 5,
-        ..default_config()
+        ..AsciiTable::default()
     };
+    let input = vec![&[123]];
+    let expected = "┌───┐\n\
+                    │ + │\n\
+                    └───┘\n";
+
+    assert_eq!(expected, config.format(input));
+}
+
+#[test]
+fn show_no_content_for_cell2() {
+    let mut config = AsciiTable::default();
+    config.columns.insert(0, Column {max_width: 1, ..Column::default()});
     let input = vec![&[123]];
     let expected = "┌───┐\n\
                     │ + │\n\
@@ -141,8 +177,20 @@ fn show_no_content_for_cell() {
 fn show_one_character_for_cell() {
     let config = AsciiTable {
         max_width: 6,
-        ..default_config()
+        ..AsciiTable::default()
     };
+    let input = vec![&[123]];
+    let expected = "┌────┐\n\
+                    │ 1+ │\n\
+                    └────┘\n";
+
+    assert_eq!(expected, config.format(input));
+}
+
+#[test]
+fn show_one_character_for_cell2() {
+    let mut config = AsciiTable::default();
+    config.columns.insert(0, Column {max_width: 2, ..Column::default()});
     let input = vec![&[123]];
     let expected = "┌────┐\n\
                     │ 1+ │\n\
@@ -155,9 +203,23 @@ fn show_one_character_for_cell() {
 fn smallest_cell_with_header() {
     let mut config = AsciiTable {
         max_width: 4,
-        ..default_config()
+        ..AsciiTable::default()
     };
     config.columns.insert(0, Column {header: "foo".to_string(), ..Column::default()});
+    let input = vec![&[123]];
+    let expected = "┌──┐\n\
+                    │  │\n\
+                    ├──┤\n\
+                    │  │\n\
+                    └──┘\n";
+
+    assert_eq!(expected, config.format(input));
+}
+
+#[test]
+fn smallest_cell_with_header2() {
+    let mut config = AsciiTable::default();
+    config.columns.insert(0, Column {header: "foo".to_string(), max_width: 0, ..Column::default()});
     let input = vec![&[123]];
     let expected = "┌──┐\n\
                     │  │\n\
@@ -172,7 +234,7 @@ fn smallest_cell_with_header() {
 fn smallest_cube_with_header() {
     let mut config = AsciiTable {
         max_width: 4,
-        ..default_config()
+        ..AsciiTable::default()
     };
     config.columns.insert(0, Column {header: "abc".to_string(), ..Column::default()});
     config.columns.insert(1, Column {header: "def".to_string(), ..Column::default()});
@@ -190,12 +252,44 @@ fn smallest_cube_with_header() {
 }
 
 #[test]
+fn smallest_cube_with_header2() {
+    let mut config = AsciiTable::default();
+    config.columns.insert(0, Column {header: "abc".to_string(), max_width: 0, ..Column::default()});
+    config.columns.insert(1, Column {header: "def".to_string(), max_width: 0, ..Column::default()});
+    config.columns.insert(2, Column {header: "ghi".to_string(), max_width: 0, ..Column::default()});
+    let input = vec![&[1, 2, 3], &[4, 5, 6], &[7, 8, 9]];
+    let expected = "┌──┬──┬──┐\n\
+                    │  │  │  │\n\
+                    ├──┼──┼──┤\n\
+                    │  │  │  │\n\
+                    │  │  │  │\n\
+                    │  │  │  │\n\
+                    └──┴──┴──┘\n";
+
+    assert_eq!(expected, config.format(input));
+}
+
+#[test]
 fn show_no_content_for_header() {
     let mut config = AsciiTable {
         max_width: 5,
-        ..default_config()
+        ..AsciiTable::default()
     };
     config.columns.insert(0, Column {header: "abc".to_string(), ..Column::default()});
+    let input = vec![&[""]];
+    let expected = "┌───┐\n\
+                    │ + │\n\
+                    ├───┤\n\
+                    │   │\n\
+                    └───┘\n";
+
+    assert_eq!(expected, config.format(input));
+}
+
+#[test]
+fn show_no_content_for_header2() {
+    let mut config = AsciiTable::default();
+    config.columns.insert(0, Column {header: "abc".to_string(), max_width: 1, ..Column::default()});
     let input = vec![&[""]];
     let expected = "┌───┐\n\
                     │ + │\n\
@@ -210,9 +304,23 @@ fn show_no_content_for_header() {
 fn show_one_character_for_header() {
     let mut config = AsciiTable {
         max_width: 6,
-        ..default_config()
+        ..AsciiTable::default()
     };
     config.columns.insert(0, Column {header: "abc".to_string(), ..Column::default()});
+    let input = vec![&[""]];
+    let expected = "┌────┐\n\
+                    │ a+ │\n\
+                    ├────┤\n\
+                    │    │\n\
+                    └────┘\n";
+
+    assert_eq!(expected, config.format(input));
+}
+
+#[test]
+fn show_one_character_for_header2() {
+    let mut config = AsciiTable::default();
+    config.columns.insert(0, Column {header: "abc".to_string(), max_width: 2, ..Column::default()});
     let input = vec![&[""]];
     let expected = "┌────┐\n\
                     │ a+ │\n\
@@ -349,7 +457,7 @@ fn ignore_unused_header() {
 #[test]
 fn align_right() {
     let mut config = AsciiTable::default();
-    config.columns.insert(0, Column {header: String::from("a"), align: Right});
+    config.columns.insert(0, Column {header: String::from("a"), align: Right, ..Column::default()});
 
     let input = vec![&[1], &[23], &[456]];
     let expected = "┌─────┐\n\
@@ -366,7 +474,7 @@ fn align_right() {
 #[test]
 fn align_center() {
     let mut config = AsciiTable::default();
-    config.columns.insert(0, Column {header: String::from("a"), align: Center});
+    config.columns.insert(0, Column {header: String::from("a"), align: Center, ..Column::default()});
 
     let input = vec![&[1], &[23], &[456], &[7890], &[12345]];
     let expected = "┌───────┐\n\

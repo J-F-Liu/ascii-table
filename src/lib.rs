@@ -219,9 +219,11 @@ impl AsciiTable {
 
     fn column_widths(&self, data: &[Vec<String>], num_cols: usize) -> Vec<usize> {
         let result: Vec<_> = (0..num_cols).map(|a| {
+            let default_conf = &DEFAULT_COLUMN;
+            let conf = self.columns.get(&a).unwrap_or(default_conf);
             let column_width = data.iter().map(|row| row[a].chars().count()).max().unwrap();
-            let header_width = self.columns.get(&a).unwrap_or(&DEFAULT_COLUMN).header.chars().count();
-            column_width.max(header_width)
+            let header_width = conf.header.chars().count();
+            column_width.max(header_width).min(conf.max_width)
         }).collect();
         self.truncate_widths(result)
     }
