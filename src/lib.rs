@@ -233,24 +233,25 @@ impl AsciiTable {
     }
 
     fn count_characters(&self, cell: &str) -> usize {
-        let mut count = 0;
-        let mut block = false;
-        let mut iter = cell.chars().peekable();
-        while let Some(ch) = iter.next() {
-            if block {
-                if ch != '\u{1b}' && ch != '[' && ch != ';' && ch != 'm' && !('0'..'9').contains(&ch) {
-                    block = false;
-                    count += 1;
-                }
-            } else {
-                if ch == '\u{1b}' && Some(&'[') == iter.peek() {
-                    block = true;
-                } else {
-                    count += 1;
-                }
-            }
-        }
-        count
+//         let mut count = 0;
+//         let mut block = false;
+//         let mut iter = cell.chars().peekable();
+//         while let Some(ch) = iter.next() {
+//             if block {
+//                 if ch != '\u{1b}' && ch != '[' && ch != ';' && ch != 'm' && !('0'..'9').contains(&ch) {
+//                     block = false;
+//                     count += 1;
+//                 }
+//             } else {
+//                 if ch == '\u{1b}' && Some(&'[') == iter.peek() {
+//                     block = true;
+//                 } else {
+//                     count += 1;
+//                 }
+//             }
+//         }
+//         count
+        cell.chars().count()
     }
 
     fn truncate_widths(&self, mut widths: Vec<usize>) -> Vec<usize> {
