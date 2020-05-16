@@ -15,9 +15,13 @@
 // You should have received a copy of the GNU General Public License
 // along with ascii-table.  If not, see <http://www.gnu.org/licenses/>.
 
+use colorful::Color;
+use colorful::Colorful;
+
 use crate::{AsciiTable, Column};
 use crate::Align::*;
 
+use std::collections::BTreeMap;
 use std::fmt::Display;
 
 fn cube_config() -> AsciiTable {
@@ -26,6 +30,19 @@ fn cube_config() -> AsciiTable {
     result.columns.insert(1, Column::with_header("b"));
     result.columns.insert(2, Column::with_header("c"));
     result
+}
+
+#[test]
+fn backwards_compatible() {
+    AsciiTable {
+        max_width: 0,
+        columns: BTreeMap::new()
+    };
+    Column {
+        header: String::new(),
+        align: Left,
+        max_width: 0
+    };
 }
 
 #[test]
@@ -501,6 +518,18 @@ fn mixed_types() {
                     │ 4 │ 5 │ 6 │\n\
                     │ 7 │ 8 │ 9 │\n\
                     └───┴───┴───┘\n";
+
+    assert_eq!(expected, config.format(input));
+}
+
+#[test]
+fn color_codes() {
+    let config = AsciiTable::default();
+    let text = "Hello".color(Color::Blue).bg_color(Color::Yellow).bold();
+    let input = vec![vec![text]];
+    let expected = "┌───────┐\n\
+                    │ \u{1b}[38;5;4m\u{1b}[48;5;3;1mHello\u{1b}[0m │\n\
+                    └───────┘\n";
 
     assert_eq!(expected, config.format(input));
 }

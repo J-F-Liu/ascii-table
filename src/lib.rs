@@ -225,11 +225,15 @@ impl AsciiTable {
         let result: Vec<_> = (0..num_cols).map(|a| {
             let default_conf = &DEFAULT_COLUMN;
             let conf = self.columns.get(&a).unwrap_or(default_conf);
-            let column_width = data.iter().map(|row| row[a].chars().count()).max().unwrap();
+            let column_width = data.iter().map(|row| Self::count_characters(&row[a])).max().unwrap();
             let header_width = conf.header.chars().count();
             column_width.max(header_width).min(conf.max_width)
         }).collect();
         self.truncate_widths(result)
+    }
+
+    fn count_characters(cell: &str) -> usize {
+        cell.chars().count()
     }
 
     fn truncate_widths(&self, mut widths: Vec<usize>) -> Vec<usize> {

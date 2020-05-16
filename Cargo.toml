@@ -12,3 +12,6 @@ documentation = "https://docs.rs/ascii_table"
 readme = "readme.md"
 categories = ["command-line-interface"]
 keywords = ["ascii", "table"]
+
+[dev-dependencies]
+colorful = "0.2"
