@@ -13,8 +13,5 @@ readme = "readme.md"
 categories = ["command-line-interface"]
 keywords = ["ascii", "table"]
 
-[dependencies]
-regex = "1"
-
 [dev-dependencies]
 colorful = "0.2"
