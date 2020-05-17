@@ -362,20 +362,26 @@ struct SmartString {
 impl SmartString {
 
     fn new() -> Self {
-        todo!()
+        Self { fragments: Vec::new() }
     }
 
     fn from<T>(string: T) -> Self
     where T: Display {
-        todo!()
+        // TODO:
+        Self { fragments: vec![(true, string.to_string())] }
     }
 
     fn char_len(&self) -> usize {
-        todo!()
+        self.fragments.iter()
+            .filter(|(visible, _)| *visible)
+            .map(|(_, string)| string.chars().count())
+            .sum()
     }
 
     fn is_empty(&self) -> bool {
-        todo!()
+        self.fragments.iter()
+            .filter(|(visible, _)| *visible)
+            .all(|(_, string)| string.is_empty())
     }
 
     fn pop(&mut self) -> Option<char> {
