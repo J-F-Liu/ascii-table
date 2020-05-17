@@ -588,6 +588,19 @@ fn color_codes_n5() {
 }
 
 #[test]
+fn color_codes_missing_m() {
+    let config = AsciiTable::default();
+    let input = vec![vec![
+        "\u{1b}[0Hello\u{1b}[0"
+    ]];
+    let expected = "┌───────┐\n\
+                    │ \u{1b}[0Hello\u{1b}[0 │\n\
+                    └───────┘\n";
+
+    assert_eq!(expected, config.format(input));
+}
+
+#[test]
 fn color_codes() {
     let config = AsciiTable::default();
     let input = vec![
