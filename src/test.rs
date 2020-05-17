@@ -673,3 +673,19 @@ fn color_codes_pad_left() {
 
     assert_eq!(expected, config.format(input));
 }
+
+#[test]
+fn color_codes_trunc() {
+    let mut config = AsciiTable::default();
+    config.columns.insert(0, Column {header: String::new(), max_width: 2, ..Column::default()});
+    let input = vec![
+        vec!["Hello".color(Color::Blue).bg_color(Color::Yellow).bold()],
+        vec!["H".color(Color::Blue).bg_color(Color::Yellow).bold()]
+    ];
+    let expected = "┌────┐\n\
+                    │ \u{1b}[38;5;4m\u{1b}[48;5;3;1mH+\u{1b}[0m │\n\
+                    │ \u{1b}[38;5;4m\u{1b}[48;5;3;1mH \u{1b}[0m │\n\
+                    └────┘\n";
+
+    assert_eq!(expected, config.format(input));
+}
