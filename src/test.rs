@@ -524,12 +524,106 @@ fn mixed_types() {
 
 #[ignore]
 #[test]
+fn color_codes_zero() {
+    let config = AsciiTable::default();
+    let input = vec![vec![
+        "\u{1b}[0mHello\u{1b}[0m"
+    ]];
+    let expected = "┌───────┐\n\
+                    │ \u{1b}[0mHello\u{1b}[0m │\n\
+                    └───────┘\n";
+
+    assert_eq!(expected, config.format(input));
+}
+
+#[test]
+fn color_codes_zero_inbetween() {
+    let config = AsciiTable::default();
+    let input = vec![vec![
+        "He\u{1b}[0ml\u{1b}[0mlo"
+    ]];
+    let expected = "┌───────┐\n\
+                    │ He\u{1b}[0ml\u{1b}[0mlo │\n\
+                    └───────┘\n";
+
+    assert_eq!(expected, config.format(input));
+}
+
+#[test]
+fn color_codes_m5() {
+    let config = AsciiTable::default();
+    let input = vec![
+        vec!["mmmmm".color(Color::Blue).bg_color(Color::Yellow).bold()]
+    ];
+    let expected = "┌───────┐\n\
+                    │ \u{1b}[38;5;4m\u{1b}[48;5;3;1mmmmmm\u{1b}[0m │\n\
+                    └───────┘\n";
+
+    assert_eq!(expected, config.format(input));
+}
+
+#[test]
+fn color_codes_b5() {
+    let config = AsciiTable::default();
+    let input = vec![
+        vec!["[[[[[".color(Color::Blue).bg_color(Color::Yellow).bold()]
+    ];
+    let expected = "┌───────┐\n\
+                    │ \u{1b}[38;5;4m\u{1b}[48;5;3;1m[[[[[\u{1b}[0m │\n\
+                    └───────┘\n";
+
+    assert_eq!(expected, config.format(input));
+}
+
+#[test]
+fn color_codes_s5() {
+    let config = AsciiTable::default();
+    let input = vec![
+        vec![";;;;;".color(Color::Blue).bg_color(Color::Yellow).bold()]
+    ];
+    let expected = "┌───────┐\n\
+                    │ \u{1b}[38;5;4m\u{1b}[48;5;3;1m;;;;;\u{1b}[0m │\n\
+                    └───────┘\n";
+
+    assert_eq!(expected, config.format(input));
+}
+
+#[test]
+fn color_codes_n5() {
+    let config = AsciiTable::default();
+    let input = vec![
+        vec!["00000".color(Color::Blue).bg_color(Color::Yellow).bold()]
+    ];
+    let expected = "┌───────┐\n\
+                    │ \u{1b}[38;5;4m\u{1b}[48;5;3;1m00000\u{1b}[0m │\n\
+                    └───────┘\n";
+
+    assert_eq!(expected, config.format(input));
+}
+
+#[test]
+fn color_codes_missing_m() {
+    let config = AsciiTable::default();
+    let input = vec![vec![
+        "\u{1b}[0Hello\u{1b}[0"
+    ]];
+    let expected = "┌───────┐\n\
+                    │ \u{1b}[0Hello\u{1b}[0 │\n\
+                    └───────┘\n";
+
+    assert_eq!(expected, config.format(input));
+}
+
+#[test]
 fn color_codes() {
     let config = AsciiTable::default();
-    let text = "Hello".color(Color::Blue).bg_color(Color::Yellow).bold();
-    let input = vec![vec![text]];
+    let input = vec![
+        vec!["Hello".color(Color::Blue).bg_color(Color::Yellow).bold()],
+        vec!["Hello".gradient(Color::Red)]
+    ];
     let expected = "┌───────┐\n\
                     │ \u{1b}[38;5;4m\u{1b}[48;5;3;1mHello\u{1b}[0m │\n\
+                    │ \u{1b}[38;2;255;0;0mH\u{1b}[38;2;255;6;0me\u{1b}[38;2;255;13;0ml\u{1b}[38;2;255;19;0ml\u{1b}[38;2;255;26;0mo\u{1b}[0m │\n\
                     └───────┘\n";
 
     assert_eq!(expected, config.format(input));
@@ -547,6 +641,53 @@ fn color_codes_in_header() {
                     ├───────┤\n\
                     │       │\n\
                     └───────┘\n";
+
+    assert_eq!(expected, config.format(input));
+}
+
+#[test]
+fn color_codes_pad_right() {
+    let config = AsciiTable::default();
+    let input = vec![
+        vec!["Hello".color(Color::Blue).bg_color(Color::Yellow).bold()],
+        vec!["H".color(Color::Blue).bg_color(Color::Yellow).bold()]
+    ];
+    let expected = "┌───────┐\n\
+                    │ \u{1b}[38;5;4m\u{1b}[48;5;3;1mHello\u{1b}[0m │\n\
+                    │ \u{1b}[38;5;4m\u{1b}[48;5;3;1mH    \u{1b}[0m │\n\
+                    └───────┘\n";
+
+    assert_eq!(expected, config.format(input));
+}
+
+#[test]
+fn color_codes_pad_left() {
+    let mut config = AsciiTable::default();
+    config.columns.insert(0, Column {header: String::new(), align: Right, ..Column::default()});
+    let input = vec![
+        vec!["Hello".color(Color::Blue).bg_color(Color::Yellow).bold()],
+        vec!["H".color(Color::Blue).bg_color(Color::Yellow).bold()]
+    ];
+    let expected = "┌───────┐\n\
+                    │ \u{1b}[38;5;4m\u{1b}[48;5;3;1mHello\u{1b}[0m │\n\
+                    │ \u{1b}[38;5;4m\u{1b}[48;5;3;1m    H\u{1b}[0m │\n\
+                    └───────┘\n";
+
+    assert_eq!(expected, config.format(input));
+}
+
+#[test]
+fn color_codes_trunc() {
+    let mut config = AsciiTable::default();
+    config.columns.insert(0, Column {header: String::new(), max_width: 2, ..Column::default()});
+    let input = vec![
+        vec!["Hello".color(Color::Blue).bg_color(Color::Yellow).bold()],
+        vec!["H".color(Color::Blue).bg_color(Color::Yellow).bold()]
+    ];
+    let expected = "┌────┐\n\
+                    │ \u{1b}[38;5;4m\u{1b}[48;5;3;1mH+\u{1b}[0m │\n\
+                    │ \u{1b}[38;5;4m\u{1b}[48;5;3;1mH \u{1b}[0m │\n\
+                    └────┘\n";
 
     assert_eq!(expected, config.format(input));
 }
