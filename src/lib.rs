@@ -400,11 +400,11 @@ impl SmartString {
     }
 
     fn lpush_visible(&mut self, ch: char) {
-        let last_fragment = self.fragments.iter_mut()
+        let first_fragment = self.fragments.iter_mut()
             .filter(|(visible, _)| *visible)
             .map(|(_, string)| string)
             .next();
-        if let Some(fragment) = last_fragment {
+        if let Some(fragment) = first_fragment {
             fragment.push(ch);
         } else {
             self.fragments.insert(0, (true, ch.to_string()));
