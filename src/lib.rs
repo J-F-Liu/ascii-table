@@ -384,7 +384,6 @@ impl SmartString {
         if !buf.is_empty() {
             fragments.push((visible, buf));
         }
-        println!("FRAGMENTS: {:?}", fragments);
 
         Self { fragments }
     }
