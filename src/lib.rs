@@ -383,6 +383,11 @@ impl SmartString {
         Self { fragments }
     }
 
+    fn from_visible<T>(string: T) -> Self
+    where T: Display {
+        Self { fragments: vec![(true, string.to_string())] }
+    }
+
     fn char_len(&self) -> usize {
         self.fragments.iter()
             .filter(|(visible, _)| *visible)
