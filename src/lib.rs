@@ -292,12 +292,12 @@ impl AsciiTable {
     }
 
     fn format_first(&self, widths: &[usize]) -> String {
-        let row: Vec<SmartString> = widths.iter().map(|&x| SmartString::new(EW.repeat(x))).collect();
+        let row: Vec<SmartString> = widths.iter().map(|&x| SmartString::from(EW.repeat(x))).collect();
         self.format_line(&row, &format!("{}{}", SE, EW), &format!("{}{}{}", EW, EWS, EW), &format!("{}{}", EW, SW))
     }
 
     fn format_middle(&self, widths: &[usize]) -> String {
-        let row: Vec<String> = widths.iter().map(|&x| EW.repeat(x)).collect();
+        let row: Vec<SmartString> = widths.iter().map(|&x| SmartString::from(EW.repeat(x))).collect();
         self.format_line(&row, &format!("{}{}", NES, EW), &format!("{}{}{}", EW, NEWS, EW), &format!("{}{}", EW, NWS))
     }
 
@@ -313,14 +313,14 @@ impl AsciiTable {
     }
 
     fn format_header_row(&self, row: &[SmartString], widths: &[usize]) -> String {
-        let row: Vec<String> = row.iter().zip(widths.iter()).map(|(cell, &width)|
+        let row: Vec<SmartString> = row.iter().zip(widths.iter()).map(|(cell, &width)|
             self.format_cell(cell, width, ' ', Align::Left)
         ).collect();
         self.format_line(&row, &format!("{}{}", NS, ' '), &format!("{}{}{}", ' ', NS, ' '), &format!("{}{}", ' ', NS))
     }
 
     fn format_last(&self, widths: &[usize]) -> String {
-        let row: Vec<String> = widths.iter().map(|&x| EW.repeat(x)).collect();
+        let row: Vec<SmartString> = widths.iter().map(|&x| SmartString::from(EW.repeat(x))).collect();
         self.format_line(&row, &format!("{}{}", NE, EW), &format!("{}{}{}", EW, NEW, EW), &format!("{}{}", EW, NW))
     }
 
