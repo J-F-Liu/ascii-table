@@ -168,7 +168,7 @@ impl AsciiTable {
             return self.format_empty()
         }
 
-        let header = self.stringify_header();
+        let header = self.stringify_header(num_cols);
         let data = self.square_data(data, num_cols);
         let has_header = header.iter().any(|text| !text.is_empty());
         let widths = self.column_widths(&data, num_cols);
@@ -209,12 +209,11 @@ impl AsciiTable {
         data.into_iter().map(|row| row.into_iter().map(|cell| SmartString::from(cell)).collect()).collect()
     }
 
-    fn stringify_header(&self) -> Vec<SmartString> {
-//         let default_conf = &DEFAULT_COLUMN;
-//         let header: Vec<_> = (0..num_cols).map(|a|
-//             &self.columns.get(&a).unwrap_or(default_conf).header
-//         ).collect();
-        todo!()
+    fn stringify_header(&self, num_cols: usize) -> Vec<SmartString> {
+        let default_conf = &DEFAULT_COLUMN;
+        (0..num_cols).map(|a|
+            SmartString::from(&self.columns.get(&a).unwrap_or(default_conf).header)
+        ).collect()
     }
 
     fn square_data(&self, mut data: Vec<Vec<SmartString>>, num_cols: usize) -> Vec<Vec<SmartString>> {
@@ -326,7 +325,6 @@ impl AsciiTable {
 
     fn format_cell(&self, text: &SmartString, len: usize, pad: char, align: Align) -> SmartString {
         if text.char_len() > len {
-//             let mut result: String = text.chars().take(len).collect();
             let mut result = text.clone();
             while result.char_len() > len {
                 result.pop();
