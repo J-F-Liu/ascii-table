@@ -525,8 +525,9 @@ fn mixed_types() {
 #[test]
 fn color_codes() {
     let config = AsciiTable::default();
-    let text = "Hello".color(Color::Blue).bg_color(Color::Yellow).bold();
-    let input = vec![vec![text]];
+    let input = vec![vec![
+        "Hello".color(Color::Blue).bg_color(Color::Yellow).bold()
+    ]];
     let expected = "┌───────┐\n\
                     │ \u{1b}[38;5;4m\u{1b}[48;5;3;1mHello\u{1b}[0m │\n\
                     └───────┘\n";
