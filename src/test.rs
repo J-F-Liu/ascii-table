@@ -522,7 +522,6 @@ fn mixed_types() {
     assert_eq!(expected, config.format(input));
 }
 
-#[ignore]
 #[test]
 fn color_codes_zero() {
     let config = AsciiTable::default();
@@ -629,7 +628,6 @@ fn color_codes() {
     assert_eq!(expected, config.format(input));
 }
 
-#[ignore]
 #[test]
 fn color_codes_in_header() {
     let mut config = AsciiTable::default();
