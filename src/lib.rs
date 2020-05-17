@@ -360,12 +360,19 @@ impl SmartString {
                 }
                 buf.push(ch);
             } else {
-                if ch != '\u{1b}' && ch != '[' && ch != ';' && ch != 'm' && !('0'..'9').contains(&ch) {
+                if ch == 'm' {
+                    buf.push(ch);
                     fragments.push((visible, buf));
                     visible = !visible;
                     buf = String::new();
+                } else if ch != '[' && ch != ';' && !('0'..'9').contains(&ch) {
+                    fragments.push((visible, buf));
+                    visible = !visible;
+                    buf = String::new();
+                    buf.push(ch);
+                } else {
+                    buf.push(ch);
                 }
-                buf.push(ch);
             }
         }
         if !buf.is_empty() {
