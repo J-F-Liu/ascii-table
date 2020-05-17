@@ -236,28 +236,6 @@ impl AsciiTable {
         self.truncate_widths(result)
     }
 
-    fn count_characters(&self, cell: &str) -> usize {
-//         let mut count = 0;
-//         let mut block = false;
-//         let mut iter = cell.chars().peekable();
-//         while let Some(ch) = iter.next() {
-//             if block {
-//                 if ch != '\u{1b}' && ch != '[' && ch != ';' && ch != 'm' && !('0'..'9').contains(&ch) {
-//                     block = false;
-//                     count += 1;
-//                 }
-//             } else {
-//                 if ch == '\u{1b}' && Some(&'[') == iter.peek() {
-//                     block = true;
-//                 } else {
-//                     count += 1;
-//                 }
-//             }
-//         }
-//         count
-        cell.chars().count()
-    }
-
     fn truncate_widths(&self, mut widths: Vec<usize>) -> Vec<usize> {
         let max_width = self.max_width;
         let table_padding = Self::smallest_width(widths.len());
@@ -330,22 +308,22 @@ impl AsciiTable {
                 result.pop();
             }
             if result.pop().is_some() {
-                result.push('+')
+                result.push_visible('+')
             }
             result
         } else {
             let mut result = text.clone();
             match align {
                 Align::Left => while result.char_len() < len {
-                    result.push(pad)
+                    result.push_visible(pad)
                 }
                 Align::Right => while result.char_len() < len {
-                    result.insert(0, pad)
+                    result.lpush_visible(pad)
                 }
                 Align::Center => while result.char_len() < len {
-                    result.push(pad);
+                    result.push_visible(pad);
                     if result.char_len() < len {
-                        result.insert(0, pad)
+                        result.lpush_visible(pad)
                     }
                 }
             }
@@ -368,6 +346,24 @@ impl SmartString {
     fn from<T>(string: T) -> Self
     where T: Display {
         // TODO:
+//         let mut count = 0;
+//         let mut block = false;
+//         let mut iter = cell.chars().peekable();
+//         while let Some(ch) = iter.next() {
+//             if block {
+//                 if ch != '\u{1b}' && ch != '[' && ch != ';' && ch != 'm' && !('0'..'9').contains(&ch) {
+//                     block = false;
+//                     count += 1;
+//                 }
+//             } else {
+//                 if ch == '\u{1b}' && Some(&'[') == iter.peek() {
+//                     block = true;
+//                 } else {
+//                     count += 1;
+//                 }
+//             }
+//         }
+//         count
         Self { fragments: vec![(true, string.to_string())] }
     }
 
@@ -391,11 +387,19 @@ impl SmartString {
             .and_then(|(_, string)| string.pop())
     }
 
-    fn push(&mut self, ch: char) {
-        todo!()
+    fn push_visible(&mut self, ch: char) {
+        let last_fragment = self.fragments.iter_mut()
+            .filter(|(visible, _)| *visible)
+            .map(|(_, string)| string)
+            .last();
+        if let Some(fragment) = last_fragment {
+            fragment.push(ch);
+        } else {
+            self.fragments.push((true, ch.to_string()));
+        }
     }
 
-    fn insert(&mut self, index: usize, ch: char) {
+    fn lpush_visible(&mut self, ch: char) {
         todo!()
     }
 }
