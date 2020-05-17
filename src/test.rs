@@ -523,13 +523,28 @@ fn mixed_types() {
 }
 
 #[test]
-fn color_codes() {
+fn color_codes_zero() {
     let config = AsciiTable::default();
     let input = vec![vec![
-        "Hello".color(Color::Blue).bg_color(Color::Yellow).bold()
+        "\u{1b}[0mHello\u{1b}[0m"
     ]];
     let expected = "┌───────┐\n\
+                    │ \u{1b}[0mHello\u{1b}[0m │\n\
+                    └───────┘\n";
+
+    assert_eq!(expected, config.format(input));
+}
+
+#[test]
+fn color_codes() {
+    let config = AsciiTable::default();
+    let input = vec![
+        vec!["Hello".color(Color::Blue).bg_color(Color::Yellow).bold()],
+        vec!["Hello".gradient(Color::Red)]
+    ];
+    let expected = "┌───────┐\n\
                     │ \u{1b}[38;5;4m\u{1b}[48;5;3;1mHello\u{1b}[0m │\n\
+                    │ \u{1b}[38;2;255;0;0mH\u{1b}[38;2;255;6;0me\u{1b}[38;2;255;13;0ml\u{1b}[38;2;255;19;0ml\u{1b}[38;2;255;26;0mo\u{1b}[0m │\n\
                     └───────┘\n";
 
     assert_eq!(expected, config.format(input));
