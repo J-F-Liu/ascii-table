@@ -364,7 +364,34 @@ impl SmartString {
 //             }
 //         }
 //         count
-        Self { fragments: vec![(true, string.to_string())] }
+        let string = string.to_string();
+        let mut fragments = Vec::new();
+        let mut visible = true;
+        let mut buf = String::new();
+        let mut iter = string.chars().peekable();
+
+        while let Some(ch) = iter.next() {
+            if visible {
+                if ch == '\u{1b}' && Some(&'[') == iter.peek() {
+                    fragments.push((visible, buf));
+                    visible = !visible;
+                    buf = String::new();
+                }
+                buf.push(ch);
+            } else {
+                if ch != '\u{1b}' && ch != '[' && ch != ';' && ch != 'm' && !('0'..'9').contains(&ch) {
+                    fragments.push((visible, buf));
+                    visible = !visible;
+                    buf = String::new();
+                }
+                buf.push(ch);
+            }
+        }
+        if !buf.is_empty() {
+            fragments.push((visible, buf));
+        }
+
+        Self { fragments }
     }
 
     fn char_len(&self) -> usize {
