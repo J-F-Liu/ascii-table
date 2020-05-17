@@ -405,7 +405,7 @@ impl SmartString {
             .map(|(_, string)| string)
             .next();
         if let Some(fragment) = first_fragment {
-            fragment.push(ch);
+            fragment.insert(0, ch);
         } else {
             self.fragments.insert(0, (true, ch.to_string()));
         }
