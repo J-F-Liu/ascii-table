@@ -171,7 +171,7 @@ impl AsciiTable {
         let header = self.stringify_header(num_cols);
         let data = self.square_data(data, num_cols);
         let has_header = header.iter().any(|text| !text.is_empty());
-        let widths = self.column_widths(&data, num_cols);
+        let widths = self.column_widths(&header, &data, num_cols);
 
         let mut result = String::new();
         result.push_str(&self.format_first(&widths));
@@ -225,12 +225,12 @@ impl AsciiTable {
         data
     }
 
-    fn column_widths(&self, data: &[Vec<SmartString>], num_cols: usize) -> Vec<usize> {
+    fn column_widths(&self, header: &[SmartString], data: &[Vec<SmartString>], num_cols: usize) -> Vec<usize> {
         let result: Vec<_> = (0..num_cols).map(|a| {
             let default_conf = &DEFAULT_COLUMN;
             let conf = self.columns.get(&a).unwrap_or(default_conf);
             let column_width = data.iter().map(|row| row[a].char_len()).max().unwrap();
-            let header_width = conf.header.chars().count();
+            let header_width = header[a].char_len();
             column_width.max(header_width).min(conf.max_width)
         }).collect();
         self.truncate_widths(result)
@@ -345,25 +345,6 @@ impl SmartString {
 
     fn from<T>(string: T) -> Self
     where T: Display {
-        // TODO:
-//         let mut count = 0;
-//         let mut block = false;
-//         let mut iter = cell.chars().peekable();
-//         while let Some(ch) = iter.next() {
-//             if block {
-//                 if ch != '\u{1b}' && ch != '[' && ch != ';' && ch != 'm' && !('0'..'9').contains(&ch) {
-//                     block = false;
-//                     count += 1;
-//                 }
-//             } else {
-//                 if ch == '\u{1b}' && Some(&'[') == iter.peek() {
-//                     block = true;
-//                 } else {
-//                     count += 1;
-//                 }
-//             }
-//         }
-//         count
         let string = string.to_string();
         let mut fragments = Vec::new();
         let mut visible = true;
