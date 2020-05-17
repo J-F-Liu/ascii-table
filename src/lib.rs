@@ -354,7 +354,9 @@ impl SmartString {
         while let Some(ch) = iter.next() {
             if visible {
                 if ch == '\u{1b}' && Some(&'[') == iter.peek() {
-                    fragments.push((visible, buf));
+                    if !buf.is_empty() {
+                        fragments.push((visible, buf));
+                    }
                     visible = !visible;
                     buf = String::new();
                 }
@@ -362,11 +364,15 @@ impl SmartString {
             } else {
                 if ch == 'm' {
                     buf.push(ch);
-                    fragments.push((visible, buf));
+                    if !buf.is_empty() {
+                        fragments.push((visible, buf));
+                    }
                     visible = !visible;
                     buf = String::new();
                 } else if ch != '[' && ch != ';' && !('0'..='9').contains(&ch) {
-                    fragments.push((visible, buf));
+                    if !buf.is_empty() {
+                        fragments.push((visible, buf));
+                    }
                     visible = !visible;
                     buf = String::new();
                     buf.push(ch);
