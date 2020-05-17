@@ -533,3 +533,18 @@ fn color_codes() {
 
     assert_eq!(expected, config.format(input));
 }
+
+#[test]
+fn color_codes_in_header() {
+    let mut config = AsciiTable::default();
+    let text = "Hello".color(Color::Blue).bg_color(Color::Yellow).bold();
+    config.columns.insert(0, Column {header: text, ..Column::default()});
+    let input = vec![&[""]];
+    let expected = "┌───────┐\n\
+                    │ \u{1b}[38;5;4m\u{1b}[48;5;3;1mHello\u{1b}[0m │\n\
+                    ├───────┤\n\
+                    │       │\n\
+                    └───────┘\n";
+
+    assert_eq!(expected, config.format(input));
+}
