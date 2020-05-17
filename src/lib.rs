@@ -365,7 +365,7 @@ impl SmartString {
                     fragments.push((visible, buf));
                     visible = !visible;
                     buf = String::new();
-                } else if ch != '[' && ch != ';' && !('0'..'9').contains(&ch) {
+                } else if ch != '[' && ch != ';' && !('0'..='9').contains(&ch) {
                     fragments.push((visible, buf));
                     visible = !visible;
                     buf = String::new();
@@ -378,6 +378,7 @@ impl SmartString {
         if !buf.is_empty() {
             fragments.push((visible, buf));
         }
+        println!("FRAGMENTS: {:?}", fragments);
 
         Self { fragments }
     }

@@ -615,6 +615,26 @@ fn color_codes() {
     assert_eq!(expected, config.format(input));
 }
 
+// \u{1b}[38;2;255;0;0mH
+// \u{1b}[38;2;255;6;0me
+// \u{1b}[38;2;255;13;0ml
+// \u{1b}[38;2;255;19;0ml
+// \u{1b}[38;2;255;26;0mo
+// \u{1b}[0m
+
+// (true, ""),
+// (false, "\u{1b}[38;2;255;0;0m"),
+// (true, "H"),
+// (false, "\u{1b}[38;2;255;6;0m"),
+// (true, "e"),
+// (false, "\u{1b}[38;2;255;13;0m"),
+// (true, "l"),
+// (false, "\u{1b}[38;2;255;1"),
+// (true, "9;0ml"),
+// (false, "\u{1b}[38;2;255;26;0m"),
+// (true, "o"),
+// (false, "\u{1b}[0m")
+
 #[test]
 fn color_codes_in_header() {
     let mut config = AsciiTable::default();
