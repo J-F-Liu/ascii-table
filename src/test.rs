@@ -538,7 +538,7 @@ fn color_codes() {
 fn color_codes_in_header() {
     let mut config = AsciiTable::default();
     let text = "Hello".color(Color::Blue).bg_color(Color::Yellow).bold();
-    config.columns.insert(0, Column {header: text, ..Column::default()});
+    config.columns.insert(0, Column {header: text.to_string(), ..Column::default()});
     let input = vec![&[""]];
     let expected = "┌───────┐\n\
                     │ \u{1b}[38;5;4m\u{1b}[48;5;3;1mHello\u{1b}[0m │\n\

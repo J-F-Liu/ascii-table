@@ -385,7 +385,10 @@ impl SmartString {
     }
 
     fn pop(&mut self) -> Option<char> {
-        todo!()
+        self.fragments.iter_mut()
+            .filter(|(visible, string)| *visible && !string.is_empty())
+            .last()
+            .and_then(|(_, string)| string.pop())
     }
 
     fn push(&mut self, ch: char) {
