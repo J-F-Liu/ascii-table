@@ -549,6 +549,19 @@ fn color_codes_m5() {
 }
 
 #[test]
+fn color_codes_b5() {
+    let config = AsciiTable::default();
+    let input = vec![
+        vec!["[[[[[".color(Color::Blue).bg_color(Color::Yellow).bold()]
+    ];
+    let expected = "┌───────┐\n\
+                    │ \u{1b}[38;5;4m\u{1b}[48;5;3;1m[[[[[\u{1b}[0m │\n\
+                    └───────┘\n";
+
+    assert_eq!(expected, config.format(input));
+}
+
+#[test]
 fn color_codes() {
     let config = AsciiTable::default();
     let input = vec![
