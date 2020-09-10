@@ -15,3 +15,6 @@ keywords = ["ascii", "table"]
 
 [dev-dependencies]
 colorful = "0.2"
+
+[dependencies]
+unicode-width = "0.1.8"

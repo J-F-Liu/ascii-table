@@ -74,6 +74,7 @@ mod test;
 
 use std::collections::BTreeMap;
 use std::fmt::Display;
+use unicode_width::UnicodeWidthStr;
 
 const SE: &str = "┌";
 const NW: &str = "┘";
@@ -482,7 +483,7 @@ impl SmartString {
         self.fragments
             .iter()
             .filter(|(visible, _)| *visible)
-            .map(|(_, string)| string.chars().count())
+            .map(|(_, string)| string.width_cjk())
             .sum()
     }
 
