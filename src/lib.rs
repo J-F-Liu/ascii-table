@@ -90,21 +90,22 @@ const DEFAULT_ALIGN: Align = Align::Left;
 const DEFAULT_COLUMN: Column = Column {
     header: String::new(),
     align: DEFAULT_ALIGN,
-    max_width: usize::max_value()
+    max_width: usize::max_value(),
 };
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct AsciiTable {
     pub max_width: usize,
-    pub columns: BTreeMap<usize, Column>
+    pub default_align: Align,
+    pub columns: BTreeMap<usize, Column>,
 }
 
 impl Default for AsciiTable {
-
     fn default() -> Self {
         Self {
             max_width: 80,
-            columns: BTreeMap::new()
+            default_align: Align::Left,
+            columns: BTreeMap::new(),
         }
     }
 }
@@ -113,11 +114,10 @@ impl Default for AsciiTable {
 pub struct Column {
     pub header: String,
     pub align: Align,
-    pub max_width: usize
+    pub max_width: usize,
 }
 
 impl Column {
-
     pub fn with_header(header: &str) -> Self {
         let mut result = Self::default();
         result.header = header.into();
@@ -126,7 +126,6 @@ impl Column {
 }
 
 impl Default for Column {
-
     fn default() -> Self {
         DEFAULT_COLUMN
     }
@@ -136,36 +135,46 @@ impl Default for Column {
 pub enum Align {
     Left,
     Center,
-    Right
+    Right,
 }
 
 impl Default for Align {
-
     fn default() -> Self {
         DEFAULT_ALIGN
     }
 }
 
 impl AsciiTable {
+    pub fn new(cell_align: Align, max_width: usize) -> Self {
+        Self {
+            max_width,
+            default_align: cell_align,
+            columns: BTreeMap::new(),
+        }
+    }
 
     pub fn print<L1, L2, T>(&self, data: L1)
-    where L1: IntoIterator<Item = L2>,
-          L2: IntoIterator<Item = T>,
-          T: Display {
+    where
+        L1: IntoIterator<Item = L2>,
+        L2: IntoIterator<Item = T>,
+        T: Display,
+    {
         print!("{}", self.format(data))
     }
 
     pub fn format<L1, L2, T>(&self, data: L1) -> String
-    where L1: IntoIterator<Item = L2>,
-          L2: IntoIterator<Item = T>,
-          T: Display {
+    where
+        L1: IntoIterator<Item = L2>,
+        L2: IntoIterator<Item = T>,
+        T: Display,
+    {
         self.format_inner(self.stringify(data))
     }
 
     fn format_inner(&self, data: Vec<Vec<SmartString>>) -> String {
         let num_cols = data.iter().map(|row| row.len()).max().unwrap_or(0);
         if !self.valid(&data, num_cols) {
-            return self.format_empty()
+            return self.format_empty();
         }
 
         let header = self.stringify_header(num_cols);
@@ -203,20 +212,32 @@ impl AsciiTable {
     }
 
     fn stringify<L1, L2, T>(&self, data: L1) -> Vec<Vec<SmartString>>
-    where L1: IntoIterator<Item = L2>,
-          L2: IntoIterator<Item = T>,
-          T: Display {
-        data.into_iter().map(|row| row.into_iter().map(|cell| SmartString::from(cell)).collect()).collect()
+    where
+        L1: IntoIterator<Item = L2>,
+        L2: IntoIterator<Item = T>,
+        T: Display,
+    {
+        data.into_iter()
+            .map(|row| {
+                row.into_iter()
+                    .map(|cell| SmartString::from(cell))
+                    .collect()
+            })
+            .collect()
     }
 
     fn stringify_header(&self, num_cols: usize) -> Vec<SmartString> {
         let default_conf = &DEFAULT_COLUMN;
-        (0..num_cols).map(|a|
-            SmartString::from(&self.columns.get(&a).unwrap_or(default_conf).header)
-        ).collect()
+        (0..num_cols)
+            .map(|a| SmartString::from(&self.columns.get(&a).unwrap_or(default_conf).header))
+            .collect()
     }
 
-    fn square_data(&self, mut data: Vec<Vec<SmartString>>, num_cols: usize) -> Vec<Vec<SmartString>> {
+    fn square_data(
+        &self,
+        mut data: Vec<Vec<SmartString>>,
+        num_cols: usize,
+    ) -> Vec<Vec<SmartString>> {
         for row in data.iter_mut() {
             while row.len() < num_cols {
                 row.push(SmartString::new())
@@ -225,22 +246,30 @@ impl AsciiTable {
         data
     }
 
-    fn column_widths(&self, header: &[SmartString], data: &[Vec<SmartString>], num_cols: usize) -> Vec<usize> {
-        let result: Vec<_> = (0..num_cols).map(|a| {
-            let default_conf = &DEFAULT_COLUMN;
-            let conf = self.columns.get(&a).unwrap_or(default_conf);
-            let column_width = data.iter().map(|row| row[a].char_len()).max().unwrap();
-            let header_width = header[a].char_len();
-            column_width.max(header_width).min(conf.max_width)
-        }).collect();
+    fn column_widths(
+        &self,
+        header: &[SmartString],
+        data: &[Vec<SmartString>],
+        num_cols: usize,
+    ) -> Vec<usize> {
+        let result: Vec<_> = (0..num_cols)
+            .map(|a| {
+                let default_conf = &DEFAULT_COLUMN;
+                let conf = self.columns.get(&a).unwrap_or(default_conf);
+                let column_width = data.iter().map(|row| row[a].char_len()).max().unwrap();
+                let header_width = header[a].char_len();
+                column_width.max(header_width).min(conf.max_width)
+            })
+            .collect();
         self.truncate_widths(result)
     }
 
     fn truncate_widths(&self, mut widths: Vec<usize>) -> Vec<usize> {
         let max_width = self.max_width;
         let table_padding = Self::smallest_width(widths.len());
-        while widths.iter().sum::<usize>() + table_padding > max_width &&
-            *widths.iter().max().unwrap() > 0 {
+        while widths.iter().sum::<usize>() + table_padding > max_width
+            && *widths.iter().max().unwrap() > 0
+        {
             let max = widths.iter().max().unwrap();
             let idx = widths.iter().rposition(|x| x == max).unwrap();
             widths[idx] -= 1;
@@ -264,41 +293,87 @@ impl AsciiTable {
 
     fn format_empty(&self) -> String {
         self.format_first(&vec![0])
-        + &self.format_line(&[SmartString::new()], &format!("{}{}", NS, ' '), &format!("{}{}{}", ' ', NS, ' '), &format!("{}{}", ' ', NS))
-        + &self.format_last(&[0])
+            + &self.format_line(
+                &[SmartString::new()],
+                &format!("{}{}", NS, ' '),
+                &format!("{}{}{}", ' ', NS, ' '),
+                &format!("{}{}", ' ', NS),
+            )
+            + &self.format_last(&[0])
     }
 
     fn format_first(&self, widths: &[usize]) -> String {
-        let row: Vec<_> = widths.iter().map(|&x| SmartString::from_visible(EW.repeat(x))).collect();
-        self.format_line(&row, &format!("{}{}", SE, EW), &format!("{}{}{}", EW, EWS, EW), &format!("{}{}", EW, SW))
+        let row: Vec<_> = widths
+            .iter()
+            .map(|&x| SmartString::from_visible(EW.repeat(x)))
+            .collect();
+        self.format_line(
+            &row,
+            &format!("{}{}", SE, EW),
+            &format!("{}{}{}", EW, EWS, EW),
+            &format!("{}{}", EW, SW),
+        )
     }
 
     fn format_middle(&self, widths: &[usize]) -> String {
-        let row: Vec<_> = widths.iter().map(|&x| SmartString::from_visible(EW.repeat(x))).collect();
-        self.format_line(&row, &format!("{}{}", NES, EW), &format!("{}{}{}", EW, NEWS, EW), &format!("{}{}", EW, NWS))
+        let row: Vec<_> = widths
+            .iter()
+            .map(|&x| SmartString::from_visible(EW.repeat(x)))
+            .collect();
+        self.format_line(
+            &row,
+            &format!("{}{}", NES, EW),
+            &format!("{}{}{}", EW, NEWS, EW),
+            &format!("{}{}", EW, NWS),
+        )
     }
 
     fn format_row(&self, row: &[SmartString], widths: &[usize]) -> String {
-        let row: Vec<_> = (0..widths.len()).map(|a| {
-            let cell = &row[a];
-            let width = widths[a];
-            let default_conf = &DEFAULT_COLUMN;
-            let conf = self.columns.get(&a).unwrap_or(default_conf);
-            self.format_cell(cell, width, ' ', conf.align)
-        }).collect();
-        self.format_line(&row, &format!("{}{}", NS, ' '), &format!("{}{}{}", ' ', NS, ' '), &format!("{}{}", ' ', NS))
+        let row: Vec<_> = (0..widths.len())
+            .map(|a| {
+                let cell = &row[a];
+                let width = widths[a];
+                let align = self
+                    .columns
+                    .get(&a)
+                    .map(|c| c.align)
+                    .unwrap_or(self.default_align);
+                self.format_cell(cell, width, ' ', align)
+            })
+            .collect();
+        self.format_line(
+            &row,
+            &format!("{}{}", NS, ' '),
+            &format!("{}{}{}", ' ', NS, ' '),
+            &format!("{}{}", ' ', NS),
+        )
     }
 
     fn format_header_row(&self, row: &[SmartString], widths: &[usize]) -> String {
-        let row: Vec<_> = row.iter().zip(widths.iter()).map(|(cell, &width)|
-            self.format_cell(cell, width, ' ', Align::Left)
-        ).collect();
-        self.format_line(&row, &format!("{}{}", NS, ' '), &format!("{}{}{}", ' ', NS, ' '), &format!("{}{}", ' ', NS))
+        let row: Vec<_> = row
+            .iter()
+            .zip(widths.iter())
+            .map(|(cell, &width)| self.format_cell(cell, width, ' ', Align::Left))
+            .collect();
+        self.format_line(
+            &row,
+            &format!("{}{}", NS, ' '),
+            &format!("{}{}{}", ' ', NS, ' '),
+            &format!("{}{}", ' ', NS),
+        )
     }
 
     fn format_last(&self, widths: &[usize]) -> String {
-        let row: Vec<_> = widths.iter().map(|&x| SmartString::from_visible(EW.repeat(x))).collect();
-        self.format_line(&row, &format!("{}{}", NE, EW), &format!("{}{}{}", EW, NEW, EW), &format!("{}{}", EW, NW))
+        let row: Vec<_> = widths
+            .iter()
+            .map(|&x| SmartString::from_visible(EW.repeat(x)))
+            .collect();
+        self.format_line(
+            &row,
+            &format!("{}{}", NE, EW),
+            &format!("{}{}{}", EW, NEW, EW),
+            &format!("{}{}", EW, NW),
+        )
     }
 
     fn format_cell(&self, text: &SmartString, len: usize, pad: char, align: Align) -> SmartString {
@@ -314,16 +389,22 @@ impl AsciiTable {
         } else {
             let mut result = text.clone();
             match align {
-                Align::Left => while result.char_len() < len {
-                    result.push_visible(pad)
+                Align::Left => {
+                    while result.char_len() < len {
+                        result.push_visible(pad)
+                    }
                 }
-                Align::Right => while result.char_len() < len {
-                    result.lpush_visible(pad)
-                }
-                Align::Center => while result.char_len() < len {
-                    result.push_visible(pad);
-                    if result.char_len() < len {
+                Align::Right => {
+                    while result.char_len() < len {
                         result.lpush_visible(pad)
+                    }
+                }
+                Align::Center => {
+                    while result.char_len() < len {
+                        result.push_visible(pad);
+                        if result.char_len() < len {
+                            result.lpush_visible(pad)
+                        }
                     }
                 }
             }
@@ -334,17 +415,20 @@ impl AsciiTable {
 
 #[derive(Clone, Debug)]
 struct SmartString {
-    fragments: Vec<(bool, String)>
+    fragments: Vec<(bool, String)>,
 }
 
 impl SmartString {
-
     fn new() -> Self {
-        Self { fragments: Vec::new() }
+        Self {
+            fragments: Vec::new(),
+        }
     }
 
     fn from<T>(string: T) -> Self
-    where T: Display {
+    where
+        T: Display,
+    {
         let string = string.to_string();
         let mut fragments = Vec::new();
         let mut visible = true;
@@ -389,31 +473,38 @@ impl SmartString {
     }
 
     fn from_visible(string: String) -> Self {
-        Self { fragments: vec![(true, string)] }
+        Self {
+            fragments: vec![(true, string)],
+        }
     }
 
     fn char_len(&self) -> usize {
-        self.fragments.iter()
+        self.fragments
+            .iter()
             .filter(|(visible, _)| *visible)
             .map(|(_, string)| string.chars().count())
             .sum()
     }
 
     fn is_empty(&self) -> bool {
-        self.fragments.iter()
+        self.fragments
+            .iter()
             .filter(|(visible, _)| *visible)
             .all(|(_, string)| string.is_empty())
     }
 
     fn pop(&mut self) -> Option<char> {
-        self.fragments.iter_mut()
+        self.fragments
+            .iter_mut()
             .filter(|(visible, string)| *visible && !string.is_empty())
             .last()
             .and_then(|(_, string)| string.pop())
     }
 
     fn push_visible(&mut self, ch: char) {
-        let last_fragment = self.fragments.iter_mut()
+        let last_fragment = self
+            .fragments
+            .iter_mut()
             .filter(|(visible, _)| *visible)
             .map(|(_, string)| string)
             .last();
@@ -425,7 +516,9 @@ impl SmartString {
     }
 
     fn lpush_visible(&mut self, ch: char) {
-        let first_fragment = self.fragments.iter_mut()
+        let first_fragment = self
+            .fragments
+            .iter_mut()
             .filter(|(visible, _)| *visible)
             .map(|(_, string)| string)
             .next();
@@ -438,9 +531,12 @@ impl SmartString {
 }
 
 impl Display for SmartString {
-
     fn fmt(&self, fmt: &mut ::std::fmt::Formatter) -> Result<(), ::std::fmt::Error> {
-        let concat: String = self.fragments.iter().map(|(_, string)| string.as_str()).collect();
+        let concat: String = self
+            .fragments
+            .iter()
+            .map(|(_, string)| string.as_str())
+            .collect();
         concat.fmt(fmt)
     }
 }
